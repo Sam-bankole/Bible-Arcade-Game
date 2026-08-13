@@ -68,10 +68,17 @@ export function App() {
     }
   };
 
+  // Ensure cloud relay connects to active session code
+  useEffect(() => {
+    if (session.code) {
+      syncEngine.connectCloudRelay(session.code);
+    }
+  }, [session.code]);
+
   // Subscribe to real-time state sync across devices, WebSocket, and local storage
   useEffect(() => {
     const unsubscribe = syncEngine.subscribe((updatedSession) => {
-      if (updatedSession && (updatedSession.code === session.code || updatedSession.id === session.id)) {
+      if (updatedSession) {
         setSession(updatedSession);
         
         // Also keep player state updated if score changed
@@ -81,7 +88,7 @@ export function App() {
       }
     });
     return () => unsubscribe();
-  }, [session.code, session.id, currentPlayer]);
+  }, [session.code, currentPlayer]);
 
   // Active round timer tick interval
   useEffect(() => {
