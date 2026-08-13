@@ -1,6 +1,7 @@
 import type { GameSession, Player, AnswerItem, GameRound, RoundState, GameType } from '../types/game';
 import { formatTimestamp, parseTimestampToMs } from './timestamp';
 import { soundFx } from './audio';
+import { db, ref, onValue, set } from './firebase';
 
 const STORAGE_PREFIX = 'bible_arcade_session_';
 const CHANNEL_NAME = 'bible_arcade_global_channel';
@@ -28,10 +29,9 @@ export function createNewSession(code?: string): GameSession {
 
 export class SyncEngine {
   private broadcastChannel: BroadcastChannel | null = null;
-  private socket: WebSocket | null = null;
   private listeners: Array<(session: GameSession) => void> = [];
   private currentRelayCode: string = '';
-  private pingInterval: any = null;
+  private firebaseUnsubscribe: (() => void) | null = null;
 
   constructor() {
     // 1. Local BroadcastChannel for same-device multi-tab sync
@@ -58,7 +58,7 @@ export class SyncEngine {
       });
     }
 
-    // 3. Connect Multi-Device Cloud Real-time WebSocket Relay
+    // 3. Connect Multi-Device Firebase Cloud Real-time Engine
     this.connectCloudRelay('ARCADE');
   }
 
@@ -66,68 +66,33 @@ export class SyncEngine {
     if (typeof window === 'undefined') return;
     const cleanCode = sessionCode.trim().toUpperCase() || 'ARCADE';
 
-    // If already connected to this channel, do not reconnect
-    if (this.socket && this.socket.readyState === WebSocket.OPEN && this.currentRelayCode === cleanCode) {
+    if (this.currentRelayCode === cleanCode && this.firebaseUnsubscribe) {
       return;
     }
 
-    if (this.socket) {
-      try { this.socket.close(); } catch {}
-    }
-    if (this.pingInterval) {
-      clearInterval(this.pingInterval);
+    if (this.firebaseUnsubscribe) {
+      try { this.firebaseUnsubscribe(); } catch {}
     }
 
     this.currentRelayCode = cleanCode;
 
     try {
-      // Dedicated PieSocket dynamic channel for session code
-      const channelId = `bible_arcade_${cleanCode.toLowerCase()}`;
-      const wsUrl = `wss://demo.piesocket.com/v3/${channelId}?api_key=VCXSpRycBxnfJfJeR779WdWWmTGXAbwqqLuGfmdL&notify_self=true`;
-      const socket = new WebSocket(wsUrl);
-
-      socket.onopen = () => {
-        console.log(`[SyncEngine] Real-time WebSocket connected for session code: ${cleanCode}`);
-        // Ping Heartbeat every 15 seconds to prevent mobile browsers from closing idle sockets
-        this.pingInterval = setInterval(() => {
-          if (socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({ type: 'PING' }));
-          }
-        }, 15000);
-      };
-
-      socket.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data && data.type === 'SYNC_STATE' && data.session) {
-            const session: GameSession = data.session;
-            const key = `${STORAGE_PREFIX}${session.code}`;
-            localStorage.setItem(key, JSON.stringify(session));
-            localStorage.setItem(`${STORAGE_PREFIX}LATEST_CODE`, session.code);
-            this.notifyListeners(session);
-          }
-        } catch {
-          // Ignore ping or non-json socket messages
+      // Firebase Realtime Database Listener
+      const sessionRef = ref(db, `arcade_sessions/${cleanCode}`);
+      const unsub = onValue(sessionRef, (snapshot) => {
+        const val = snapshot.val();
+        if (val && typeof val === 'object') {
+          const session: GameSession = val;
+          const key = `${STORAGE_PREFIX}${session.code}`;
+          localStorage.setItem(key, JSON.stringify(session));
+          localStorage.setItem(`${STORAGE_PREFIX}LATEST_CODE`, session.code);
+          this.notifyListeners(session);
         }
-      };
-
-      socket.onclose = () => {
-        if (this.pingInterval) clearInterval(this.pingInterval);
-        // Automatically reconnect after 2 seconds
-        setTimeout(() => {
-          if (this.currentRelayCode === cleanCode) {
-            this.connectCloudRelay(cleanCode);
-          }
-        }, 2000);
-      };
-
-      socket.onerror = (err) => {
-        console.warn('[SyncEngine] WebSocket error, retrying connection...', err);
-      };
-
-      this.socket = socket;
+      });
+      this.firebaseUnsubscribe = unsub;
+      console.log(`[SyncEngine] Connected to Firebase Realtime Database for session ${cleanCode}`);
     } catch (err) {
-      console.error('[SyncEngine] WebSocket initialization error:', err);
+      console.warn('[SyncEngine] Firebase Realtime Database sub error:', err);
     }
   }
 
@@ -148,26 +113,20 @@ export class SyncEngine {
     localStorage.setItem(key, JSON.stringify(session));
     localStorage.setItem(`${STORAGE_PREFIX}LATEST_CODE`, session.code);
 
-    // Ensure socket is connected to the right session channel
-    if (this.currentRelayCode !== session.code) {
-      this.connectCloudRelay(session.code);
+    // 1. Firebase Realtime Database Cloud Sync
+    try {
+      const sessionRef = ref(db, `arcade_sessions/${session.code}`);
+      set(sessionRef, session);
+    } catch (err) {
+      console.error('[SyncEngine] Firebase save error:', err);
     }
 
-    // Broadcast 1: Local same-device multi-tab
+    // 2. Local Same-Device BroadcastChannel
     if (this.broadcastChannel) {
       this.broadcastChannel.postMessage({
         type: 'SYNC_STATE',
         session
       });
-    }
-
-    // Broadcast 2: Dedicated Cloud WebSocket stream across Internet / Netlify
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify({
-        type: 'SYNC_STATE',
-        code: session.code,
-        session
-      }));
     }
   }
 
