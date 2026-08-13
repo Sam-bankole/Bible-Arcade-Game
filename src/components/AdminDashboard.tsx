@@ -11,6 +11,7 @@ import {
 
 interface AdminDashboardProps {
   session: GameSession;
+  onUpdateSessionCode: (newCode: string) => void;
   onUpdateGameType: (gameType: GameType) => void;
   onStartRound: (roundData: Partial<GameRound>) => void;
   onSetRoundState: (status: 'WAITING' | 'LIVE' | 'CLOSED' | 'REVIEW' | 'RESULTS') => void;
@@ -26,6 +27,7 @@ import { syncEngine } from '../utils/syncEngine';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   session,
+  onUpdateSessionCode,
   onUpdateGameType,
   onStartRound,
   onSetRoundState,
@@ -111,6 +113,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const currentRound = session.currentRound;
   const currentAnswers: AnswerItem[] = (currentRound && session.answers[currentRound.id]) || [];
 
+  const [isEditingCode, setIsEditingCode] = useState<boolean>(false);
+  const [sessionCodeInput, setSessionCodeInput] = useState<string>(session.code);
+
+  const handleSaveSessionCode = () => {
+    if (sessionCodeInput.trim()) {
+      onUpdateSessionCode(sessionCodeInput.trim().toUpperCase());
+      setIsEditingCode(false);
+    }
+  };
+
   return (
     <div className="py-6 space-y-6">
       
@@ -126,8 +138,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <h2 className="font-arcade text-xl font-extrabold gold-gradient-text tracking-wide">
               ADMIN CONTROL CENTER
             </h2>
-            <div className="text-xs text-slate-400 font-medium flex items-center gap-2 mt-0.5">
-              <span>SESSION: <strong className="text-amber-300 font-mono">{session.code}</strong></span>
+            <div className="text-xs text-slate-400 font-medium flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className="flex items-center gap-1">
+                SESSION CODE: 
+                {isEditingCode ? (
+                  <span className="inline-flex items-center gap-1">
+                    <input
+                      type="text"
+                      maxLength={10}
+                      value={sessionCodeInput}
+                      onChange={(e) => setSessionCodeInput(e.target.value.toUpperCase())}
+                      className="arcade-input py-0.5 px-2 text-xs font-mono font-bold text-amber-300 w-24 text-center uppercase"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveSessionCode}
+                      className="px-2 py-0.5 rounded bg-emerald-500 text-black text-[10px] font-bold"
+                    >
+                      SAVE
+                    </button>
+                  </span>
+                ) : (
+                  <span 
+                    onClick={() => {
+                      setSessionCodeInput(session.code);
+                      setIsEditingCode(true);
+                    }}
+                    className="text-amber-300 font-mono font-extrabold cursor-pointer hover:underline bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30"
+                    title="Click to edit session code"
+                  >
+                    {session.code} ✏️
+                  </span>
+                )}
+              </span>
               <span>•</span>
               <span>PLAYERS: <strong className="text-cyan-400 font-mono">{Object.keys(session.players).length}</strong></span>
             </div>

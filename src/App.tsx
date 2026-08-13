@@ -19,15 +19,26 @@ function getViewFromUrl(): 'LANDING' | 'ADMIN' | 'PLAYER' | 'PROJECTOR' {
   return 'LANDING';
 }
 
+function getInitialSessionCode(): string {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const urlCode = params.get('code');
+    if (urlCode && urlCode.trim()) return urlCode.trim().toUpperCase();
+    
+    const latestCode = syncEngine.getLatestSessionCode();
+    if (latestCode) return latestCode;
+  }
+  return 'ARCADE';
+}
+
 export function App() {
   const [currentView, setCurrentView] = useState<'LANDING' | 'ADMIN' | 'PLAYER' | 'PROJECTOR'>(() => getViewFromUrl());
   const [session, setSession] = useState<GameSession>(() => {
-    const latestCode = syncEngine.getLatestSessionCode();
-    if (latestCode) {
-      const existing = syncEngine.getSession(latestCode);
-      if (existing) return existing;
-    }
-    const initial = createNewSession();
+    const code = getInitialSessionCode();
+    const existing = syncEngine.getSession(code);
+    if (existing) return existing;
+    
+    const initial = createNewSession(code);
     syncEngine.saveAndBroadcastSession(initial);
     return initial;
   });
@@ -57,10 +68,10 @@ export function App() {
     }
   };
 
-  // Subscribe to real-time state sync across tabs and storage events
+  // Subscribe to real-time state sync across devices, WebSocket, and local storage
   useEffect(() => {
     const unsubscribe = syncEngine.subscribe((updatedSession) => {
-      if (updatedSession && updatedSession.id === session.id) {
+      if (updatedSession && (updatedSession.code === session.code || updatedSession.id === session.id)) {
         setSession(updatedSession);
         
         // Also keep player state updated if score changed
@@ -70,7 +81,7 @@ export function App() {
       }
     });
     return () => unsubscribe();
-  }, [session.id, currentPlayer]);
+  }, [session.code, session.id, currentPlayer]);
 
   // Active round timer tick interval
   useEffect(() => {
@@ -198,6 +209,10 @@ export function App() {
         {currentView === 'ADMIN' && (
           <AdminDashboard
             session={session}
+            onUpdateSessionCode={(newCode) => {
+              const updated = syncEngine.updateSessionCode(session, newCode);
+              setSession(updated);
+            }}
             onUpdateGameType={handleUpdateGameType}
             onStartRound={handleStartRound}
             onSetRoundState={handleSetRoundState}

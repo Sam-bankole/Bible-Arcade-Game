@@ -1,5 +1,5 @@
 import type { GameSession, Player, AnswerItem, GameRound, RoundState, GameType } from '../types/game';
-import { formatTimestamp, parseTimestampToMs, generateSessionCode } from './timestamp';
+import { formatTimestamp, parseTimestampToMs } from './timestamp';
 import { soundFx } from './audio';
 
 const STORAGE_PREFIX = 'bible_arcade_session_';
@@ -10,7 +10,7 @@ export const DEFAULT_ADMIN_PASSWORD = 'BIBLE2026!';
 
 // Default initial state generator
 export function createNewSession(code?: string): GameSession {
-  const sessionCode = (code || generateSessionCode()).toUpperCase();
+  const sessionCode = (code || 'ARCADE').toUpperCase();
   return {
     id: `sess_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
     code: sessionCode,
@@ -148,6 +148,17 @@ export class SyncEngine {
   }
 
   // --- ADMIN ACTIONS ---
+
+  public updateSessionCode(session: GameSession, newCode: string): GameSession {
+    const cleanCode = newCode.trim().toUpperCase();
+    if (!cleanCode) return session;
+    const updated: GameSession = {
+      ...session,
+      code: cleanCode
+    };
+    this.saveAndBroadcastSession(updated);
+    return updated;
+  }
 
   public updateGameType(session: GameSession, gameType: GameType): GameSession {
     const updated: GameSession = {
