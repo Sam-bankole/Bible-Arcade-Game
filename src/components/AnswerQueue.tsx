@@ -68,26 +68,26 @@ export const AnswerQueue: React.FC<AnswerQueueProps> = ({
       </div>
 
       {answers.length === 0 ? (
-        <div className="text-center py-12 text-slate-400 bg-slate-950/40 rounded-xl border border-dashed border-white/10">
-          <Flame className="w-8 h-8 mx-auto mb-2 opacity-50 text-amber-500" />
-          <p className="font-arcade text-sm text-slate-300">WAITING FOR PLAYER SUBMISSIONS...</p>
-          <p className="text-xs text-slate-500 mt-1">Player submissions will appear here instantly with high-precision timestamps.</p>
+        <div className="text-center py-8 sm:py-12 text-slate-400 bg-slate-950/40 rounded-xl border border-dashed border-white/10">
+          <Flame className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 opacity-50 text-amber-500" />
+          <p className="font-arcade text-xs sm:text-sm text-slate-300">WAITING FOR PLAYER SUBMISSIONS...</p>
+          <p className="text-[10px] sm:text-xs text-slate-500 mt-1">Player submissions will appear here instantly with high-precision timestamps.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto max-w-full scrollbar-thin rounded-xl border border-white/10">
+          <table className="w-full text-left border-collapse min-w-[640px]">
             <thead>
-              <tr className="border-b border-white/10 text-[11px] font-arcade text-slate-400 uppercase">
-                <th className="py-3 px-3">RANK</th>
-                <th className="py-3 px-3">PLAYER</th>
-                <th className="py-3 px-3">SUBMITTED ANSWER</th>
-                <th className="py-3 px-3 text-center">SYSTEM TIME</th>
-                <th className="py-3 px-3 text-center">OFFICIAL TIME (EDITABLE)</th>
-                <th className="py-3 px-3 text-center">STATUS</th>
-                <th className="py-3 px-3 text-right">ACTIONS & POINTS</th>
+              <tr className="border-b border-white/10 text-[10px] sm:text-[11px] font-arcade text-slate-400 uppercase bg-slate-900/80">
+                <th className="py-2.5 px-2 sm:px-3">RANK</th>
+                <th className="py-2.5 px-2 sm:px-3">PLAYER</th>
+                <th className="py-2.5 px-2 sm:px-3">SUBMITTED ANSWER</th>
+                <th className="py-2.5 px-2 sm:px-3 text-center">SYSTEM TIME</th>
+                <th className="py-2.5 px-2 sm:px-3 text-center">OFFICIAL TIME (EDITABLE)</th>
+                <th className="py-2.5 px-2 sm:px-3 text-center">STATUS</th>
+                <th className="py-2.5 px-2 sm:px-3 text-right">ACTIONS & POINTS</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-sm">
+            <tbody className="divide-y divide-white/5 text-xs sm:text-sm">
               {answers.map((ans, idx) => {
                 const isEditing = editingId === ans.id;
                 const isFirst = idx === 0;
@@ -185,51 +185,29 @@ export const AnswerQueue: React.FC<AnswerQueueProps> = ({
 
                     {/* Actions & Point Buttons */}
                     <td className="py-3 px-3 text-right">
-                      <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                      <div className="flex items-center justify-end gap-2 flex-wrap">
                         
-                        {/* Quick Accept Buttons */}
+                        {/* Primary Winner +1 Point Button */}
                         <button
-                          onClick={() => onEvaluateAnswer(ans.id, 'CORRECT', 10, isFirst)}
-                          className="px-2 py-1 rounded-md text-[11px] font-arcade font-bold bg-emerald-500 text-black hover:bg-emerald-400"
-                          title="Accept +10 Pts"
-                        >
-                          +10
-                        </button>
-                        <button
-                          onClick={() => onEvaluateAnswer(ans.id, 'CORRECT', 7)}
-                          className="px-2 py-1 rounded-md text-[11px] font-arcade font-bold bg-emerald-600/80 text-white hover:bg-emerald-500"
-                          title="Accept +7 Pts"
-                        >
-                          +7
-                        </button>
-                        <button
-                          onClick={() => onEvaluateAnswer(ans.id, 'CORRECT', 5)}
-                          className="px-2 py-1 rounded-md text-[11px] font-arcade font-bold bg-emerald-700/80 text-white hover:bg-emerald-600"
-                          title="Accept +5 Pts"
-                        >
-                          +5
-                        </button>
-
-                        {/* Reject Button */}
-                        <button
-                          onClick={() => onEvaluateAnswer(ans.id, 'WRONG', 0)}
-                          className="px-2 py-1 rounded-md text-[11px] font-arcade font-bold bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500 hover:text-white"
-                          title="Reject Answer"
-                        >
-                          REJECT
-                        </button>
-
-                        {/* Mark Winner Button */}
-                        <button
-                          onClick={() => onEvaluateAnswer(ans.id, 'CORRECT', 10, true)}
-                          className={`p-1 rounded-md transition-colors ${
+                          onClick={() => onEvaluateAnswer(ans.id, 'CORRECT', 1, true)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-arcade font-bold flex items-center gap-1.5 transition-all shadow-md ${
                             ans.isWinner 
-                              ? 'bg-amber-400 text-black font-bold' 
-                              : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500 hover:text-black'
+                              ? 'bg-amber-400 text-black font-extrabold ring-2 ring-amber-300' 
+                              : 'bg-emerald-500 text-black hover:bg-emerald-400'
                           }`}
-                          title="Mark Official Winner"
+                          title="Mark Correct Winner (+1 Point)"
                         >
-                          <Award className="w-4 h-4" />
+                          <Award className="w-3.5 h-3.5" />
+                          <span>MARK WINNER (+1 PT)</span>
+                        </button>
+
+                        {/* Reject / No Point Button */}
+                        <button
+                          onClick={() => onEvaluateAnswer(ans.id, 'WRONG', 0, false)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-arcade font-bold bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500 hover:text-white transition-colors"
+                          title="Reject Answer (0 Points)"
+                        >
+                          REJECT (0 PT)
                         </button>
                       </div>
                     </td>

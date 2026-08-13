@@ -121,19 +121,19 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
   };
 
   return (
-    <div className="arcade-card arcade-card-gold p-6">
+    <div className="arcade-card arcade-card-gold p-3.5 sm:p-6 max-w-full overflow-x-hidden">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-white/10 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5 sm:pb-4 border-b border-white/10 mb-4 sm:mb-6">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
             {currentGameInfo.icon}
           </div>
           <div>
-            <h3 className="font-arcade text-lg font-bold text-white tracking-wide">
+            <h3 className="font-arcade text-sm sm:text-lg font-bold text-white tracking-wide leading-tight">
               {currentGameInfo.title}
             </h3>
-            <p className="text-xs text-amber-400 font-semibold uppercase">
+            <p className="text-[10px] sm:text-xs text-amber-400 font-semibold uppercase">
               {currentGameInfo.subtitle}
             </p>
           </div>
@@ -142,13 +142,13 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
         <button
           type="button"
           onClick={() => setIsPresetModalOpen(true)}
-          className="arcade-btn arcade-btn-secondary text-xs py-2 px-3 flex items-center gap-1.5"
+          className="arcade-btn arcade-btn-secondary text-[10px] sm:text-xs py-1.5 sm:py-2 px-2.5 sm:px-3 flex items-center gap-1.5 w-full sm:w-auto justify-center"
         >
           <span>LOAD PRESET QUESTION</span>
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         
         {/* GAME SPECIFIC INPUTS */}
 

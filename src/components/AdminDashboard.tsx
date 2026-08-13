@@ -22,7 +22,7 @@ interface AdminDashboardProps {
   onOpenProjector: () => void;
 }
 
-import { syncEngine, DEFAULT_ADMIN_PASSWORD } from '../utils/syncEngine';
+import { syncEngine } from '../utils/syncEngine';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   session,
@@ -40,8 +40,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => syncEngine.isAdminAuthenticated());
   const [activeTab, setActiveTab] = useState<'CONTROL' | 'SELECTOR' | 'LEADERBOARD'>('CONTROL');
   const [authError, setAuthError] = useState<string>('');
-  const [showPasswordChange, setShowPasswordChange] = useState<boolean>(false);
-  const [newPasswordInput, setNewPasswordInput] = useState<string>('');
 
   const handlePasswordAuth = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,25 +47,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setIsAuthenticated(true);
       setAuthError('');
     } else {
-      setAuthError(`Invalid Admin Password. Default is '${DEFAULT_ADMIN_PASSWORD}'`);
+      setAuthError('Invalid Admin Password. Access Denied.');
     }
   };
 
   const handleLockSession = () => {
     syncEngine.lockAdminSession();
     setIsAuthenticated(false);
-  };
-
-  const handleChangePassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPasswordInput.trim().length < 4) {
-      alert('Password must be at least 4 characters long.');
-      return;
-    }
-    syncEngine.setAdminPassword(newPasswordInput.trim());
-    alert('Admin password successfully updated!');
-    setShowPasswordChange(false);
-    setNewPasswordInput('');
   };
 
   if (!isAuthenticated) {
@@ -97,7 +83,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   setPasswordInput(e.target.value);
                   setAuthError('');
                 }}
-                placeholder={`Default: ${DEFAULT_ADMIN_PASSWORD}`}
+                placeholder="Enter Admin Password"
                 className="arcade-input text-center text-lg font-mono font-bold tracking-wider"
                 autoFocus
                 required
@@ -117,10 +103,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <Unlock className="w-4 h-4" /> UNLOCK CONTROL CENTER
             </button>
           </form>
-
-          <div className="mt-6 pt-4 border-t border-white/10 text-[11px] text-slate-500">
-            Default Password: <strong className="text-amber-400 font-mono">{DEFAULT_ADMIN_PASSWORD}</strong>
-          </div>
         </div>
       </div>
     );
@@ -148,8 +130,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <span>SESSION: <strong className="text-amber-300 font-mono">{session.code}</strong></span>
               <span>•</span>
               <span>PLAYERS: <strong className="text-cyan-400 font-mono">{Object.keys(session.players).length}</strong></span>
-              <span>•</span>
-              <span className="text-slate-400 font-mono bg-slate-800 px-2 py-0.5 rounded border border-white/10 text-[10px]">DIRECT URL: /admin</span>
             </div>
           </div>
         </div>
@@ -201,25 +181,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* Lock Admin Session */}
           <button
             onClick={handleLockSession}
-            className="arcade-btn arcade-btn-secondary text-xs py-2 px-3 flex items-center gap-1.5"
+            className="arcade-btn arcade-btn-secondary text-[10px] sm:text-xs py-1.5 sm:py-2 px-2 sm:px-3 flex items-center gap-1 sm:gap-1.5"
             title="Lock Admin Control Desk"
           >
             <Lock className="w-3.5 h-3.5 text-amber-400" /> LOCK DESK
           </button>
 
-          {/* Change Admin Password */}
-          <button
-            onClick={() => setShowPasswordChange(true)}
-            className="arcade-btn arcade-btn-secondary text-xs py-2 px-3 flex items-center gap-1.5"
-            title="Change Admin Password"
-          >
-            <span>CHANGE PASSWORD</span>
-          </button>
-
           {/* Leaderboard visibility toggle */}
           <button
             onClick={() => onToggleLeaderboard(!session.showLeaderboardToPlayers)}
-            className={`arcade-btn text-xs py-2 px-3 flex items-center gap-1.5 ${
+            className={`arcade-btn text-[10px] sm:text-xs py-1.5 sm:py-2 px-2 sm:px-3 flex items-center gap-1 sm:gap-1.5 ${
               session.showLeaderboardToPlayers ? 'arcade-btn-cyan' : 'arcade-btn-secondary'
             }`}
             title="Toggle player leaderboard access"
@@ -235,7 +206,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 onResetSession();
               }
             }}
-            className="arcade-btn arcade-btn-red text-xs py-2 px-3 flex items-center gap-1.5"
+            className="arcade-btn arcade-btn-red text-[10px] sm:text-xs py-1.5 sm:py-2 px-2 sm:px-3 flex items-center gap-1 sm:gap-1.5"
             title="Reset Game Session"
           >
             <RefreshCw className="w-3.5 h-3.5" /> RESET SESSION
@@ -244,9 +215,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* Projector launcher */}
           <button
             onClick={onOpenProjector}
-            className="arcade-btn arcade-btn-purple text-xs py-2 px-3 flex items-center gap-1.5"
+            className="arcade-btn arcade-btn-purple text-[10px] sm:text-xs py-1.5 sm:py-2 px-2 sm:px-3 flex items-center gap-1 sm:gap-1.5"
           >
-            <Tv className="w-3.5 h-3.5" /> LAUNCH DISPLAY MODE
+            <Tv className="w-3.5 h-3.5" /> STAGE DISPLAY
           </button>
 
         </div>
@@ -254,38 +225,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </div>
 
       {/* Admin Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 border-b border-white/10 pb-2">
         <button
           onClick={() => setActiveTab('CONTROL')}
-          className={`px-4 py-2 rounded-xl text-xs font-arcade font-bold transition-all flex items-center gap-2 ${
+          className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-arcade font-bold transition-all flex items-center gap-1.5 ${
             activeTab === 'CONTROL' 
               ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
               : 'text-slate-400 hover:text-white bg-slate-900/50'
           }`}
         >
-          <Radio className="w-4 h-4" /> ACTIVE ROUND CONTROL
+          <Radio className="w-3.5 h-3.5" /> ACTIVE ROUND CONTROL
         </button>
 
         <button
           onClick={() => setActiveTab('SELECTOR')}
-          className={`px-4 py-2 rounded-xl text-xs font-arcade font-bold transition-all flex items-center gap-2 ${
+          className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-arcade font-bold transition-all flex items-center gap-1.5 ${
             activeTab === 'SELECTOR' 
               ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
               : 'text-slate-400 hover:text-white bg-slate-900/50'
           }`}
         >
-          <Zap className="w-4 h-4" /> SWITCH GAME MODE
+          <Zap className="w-3.5 h-3.5" /> SWITCH GAME MODE
         </button>
 
         <button
           onClick={() => setActiveTab('LEADERBOARD')}
-          className={`px-4 py-2 rounded-xl text-xs font-arcade font-bold transition-all flex items-center gap-2 ${
+          className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-arcade font-bold transition-all flex items-center gap-1.5 ${
             activeTab === 'LEADERBOARD' 
               ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
               : 'text-slate-400 hover:text-white bg-slate-900/50'
           }`}
         >
-          <Trophy className="w-4 h-4" /> LEADERBOARD STANDINGS
+          <Trophy className="w-3.5 h-3.5" /> LEADERBOARD STANDINGS
         </button>
       </div>
 
@@ -334,52 +305,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           isAdmin={true}
           onUpdateScore={onUpdatePlayerScore}
         />
-      )}
-
-      {/* CHANGE PASSWORD MODAL */}
-      {showPasswordChange && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="arcade-card arcade-card-gold p-6 max-w-md w-full relative">
-            <h3 className="font-arcade text-lg font-bold text-white mb-2">
-              UPDATE ADMIN PASSWORD
-            </h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Set a custom strict password for your admin control desk.
-            </p>
-
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase text-amber-400 mb-1">
-                  NEW ADMIN PASSWORD
-                </label>
-                <input
-                  type="password"
-                  value={newPasswordInput}
-                  onChange={(e) => setNewPasswordInput(e.target.value)}
-                  placeholder="Enter new admin password"
-                  className="arcade-input font-mono"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="submit"
-                  className="arcade-btn arcade-btn-primary flex-1 py-2.5 text-xs"
-                >
-                  SAVE NEW PASSWORD
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordChange(false)}
-                  className="arcade-btn arcade-btn-secondary py-2.5 text-xs"
-                >
-                  CANCEL
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
 
     </div>

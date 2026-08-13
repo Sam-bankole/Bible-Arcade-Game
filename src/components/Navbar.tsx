@@ -24,54 +24,54 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0c0e18]/90 backdrop-blur-md border-b border-white/10 px-4 py-3">
-      <div className="arcade-container flex items-center justify-between">
+    <header className="sticky top-0 z-50 bg-[#0c0e18]/98 backdrop-blur-xl border-b border-amber-500/25 px-2 sm:px-4 py-2 sm:py-3 shadow-lg shadow-black/60 max-w-full">
+      <div className="arcade-container flex items-center justify-between gap-1.5 sm:gap-3 max-w-full">
         
         {/* Brand / Logo */}
         <div 
           onClick={() => onNavigate('LANDING')}
-          className="flex items-center gap-2 cursor-pointer group"
+          className="flex items-center gap-1.5 sm:gap-2.5 cursor-pointer group flex-shrink-0"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-            <span className="text-xl">📜</span>
+          <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/30 group-hover:scale-105 transition-transform flex-shrink-0">
+            <span className="text-xs sm:text-xl">📜</span>
           </div>
           <div>
-            <div className="font-arcade text-lg font-extrabold tracking-wider gold-gradient-text">
+            <div className="font-arcade text-[11px] sm:text-base md:text-lg font-black tracking-wide gold-gradient-text leading-none">
               BIBLE ARCADE
             </div>
-            <div className="text-[10px] uppercase tracking-widest text-slate-400 font-medium">
+            <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-amber-400 font-bold hidden sm:block mt-0.5">
               Live Competition
             </div>
           </div>
         </div>
 
         {/* Session Code & Controls */}
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
           
           {sessionCode && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
-              <span className="text-xs text-amber-400 font-semibold uppercase">CODE:</span>
-              <span className="font-mono font-bold text-amber-300 tracking-wider text-sm">{sessionCode}</span>
+            <div className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 rounded-md sm:rounded-lg bg-amber-500/15 border border-amber-500/40">
+              <span className="text-[8px] sm:text-xs text-amber-400 font-bold uppercase">CODE:</span>
+              <span className="font-mono font-black text-amber-300 tracking-wider text-[10px] sm:text-sm">{sessionCode}</span>
             </div>
           )}
 
           {/* Mode Context Badge */}
           {currentView === 'ADMIN' ? (
-            <div className="flex items-center gap-2">
-              <span className="arcade-badge badge-gold border-amber-500/40 text-amber-300">
-                <Shield className="w-3.5 h-3.5 text-amber-400" /> ADMIN PORTAL
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <span className="arcade-badge badge-gold border-amber-500/50 text-amber-300 text-[9px] sm:text-xs py-1 px-1.5 sm:px-2">
+                <Shield className="w-3 h-3 text-amber-400" /> <span className="hidden sm:inline">ADMIN</span>
               </span>
               <button
                 onClick={() => onNavigate('PROJECTOR')}
-                className="arcade-btn arcade-btn-purple text-xs py-1.5 px-3 flex items-center gap-1.5"
+                className="arcade-btn arcade-btn-purple text-[9px] sm:text-xs py-1 px-1.5 sm:px-2.5 flex items-center gap-1"
                 title="Launch Big Screen Projector Display"
               >
-                <Tv className="w-3.5 h-3.5" /> PROJECTOR
+                <Tv className="w-3 h-3" /> <span className="hidden sm:inline">STAGE</span>
               </button>
             </div>
           ) : (
-            <span className="arcade-badge badge-cyan">
-              <Play className="w-3.5 h-3.5 text-cyan-400" /> CONTESTANT ARENA
+            <span className="arcade-badge badge-cyan text-[9px] sm:text-xs py-1 px-1.5 sm:px-2">
+              <Play className="w-3 h-3 text-cyan-400" /> <span className="hidden sm:inline">ARENA</span>
             </span>
           )}
 
@@ -79,12 +79,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={toggleSound}
             title={soundEnabled ? 'Mute Sound FX' : 'Enable Sound FX'}
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-slate-300 hover:text-amber-400 transition-colors"
+            className="p-1 sm:p-2 rounded-lg bg-slate-800/90 hover:bg-slate-700/90 border border-white/15 text-slate-200 hover:text-amber-400 transition-colors flex-shrink-0"
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-amber-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" /> : <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />}
           </button>
 
-          {/* Optional Reset Session button for admin */}
+          {/* Reset Session button for admin */}
           {currentView === 'ADMIN' && onResetSession && (
             <button
               onClick={() => {
@@ -93,9 +93,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }
               }}
               title="Reset Session"
-              className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 transition-colors"
+              className="p-1 sm:p-2 rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/40 text-red-400 transition-colors flex-shrink-0"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           )}
 
