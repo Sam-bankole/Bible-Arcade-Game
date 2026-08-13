@@ -109,14 +109,17 @@ export class SyncEngine {
 
   public saveAndBroadcastSession(session: GameSession) {
     if (typeof window === 'undefined') return;
-    const key = `${STORAGE_PREFIX}${session.code}`;
-    localStorage.setItem(key, JSON.stringify(session));
-    localStorage.setItem(`${STORAGE_PREFIX}LATEST_CODE`, session.code);
+    // Sanitize session object to remove undefined properties for Firebase set()
+    const cleanSession: GameSession = JSON.parse(JSON.stringify(session));
+
+    const key = `${STORAGE_PREFIX}${cleanSession.code}`;
+    localStorage.setItem(key, JSON.stringify(cleanSession));
+    localStorage.setItem(`${STORAGE_PREFIX}LATEST_CODE`, cleanSession.code);
 
     // 1. Firebase Realtime Database Cloud Sync
     try {
-      const sessionRef = ref(db, `arcade_sessions/${session.code}`);
-      set(sessionRef, session);
+      const sessionRef = ref(db, `arcade_sessions/${cleanSession.code}`);
+      set(sessionRef, cleanSession);
     } catch (err) {
       console.error('[SyncEngine] Firebase save error:', err);
     }
@@ -125,7 +128,7 @@ export class SyncEngine {
     if (this.broadcastChannel) {
       this.broadcastChannel.postMessage({
         type: 'SYNC_STATE',
-        session
+        session: cleanSession
       });
     }
   }
