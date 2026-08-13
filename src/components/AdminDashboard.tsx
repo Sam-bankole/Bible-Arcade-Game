@@ -42,6 +42,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => syncEngine.isAdminAuthenticated());
   const [activeTab, setActiveTab] = useState<'CONTROL' | 'SELECTOR' | 'LEADERBOARD'>('CONTROL');
   const [authError, setAuthError] = useState<string>('');
+  const [isEditingCode, setIsEditingCode] = useState<boolean>(false);
+  const [sessionCodeInput, setSessionCodeInput] = useState<string>(session.code);
 
   const handlePasswordAuth = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +58,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleLockSession = () => {
     syncEngine.lockAdminSession();
     setIsAuthenticated(false);
+  };
+
+  const handleSaveSessionCode = () => {
+    if (sessionCodeInput.trim()) {
+      onUpdateSessionCode(sessionCodeInput.trim().toUpperCase());
+      setIsEditingCode(false);
+    }
   };
 
   if (!isAuthenticated) {
@@ -112,16 +121,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const currentRound = session.currentRound;
   const currentAnswers: AnswerItem[] = (currentRound && session.answers[currentRound.id]) || [];
-
-  const [isEditingCode, setIsEditingCode] = useState<boolean>(false);
-  const [sessionCodeInput, setSessionCodeInput] = useState<string>(session.code);
-
-  const handleSaveSessionCode = () => {
-    if (sessionCodeInput.trim()) {
-      onUpdateSessionCode(sessionCodeInput.trim().toUpperCase());
-      setIsEditingCode(false);
-    }
-  };
 
   return (
     <div className="py-6 space-y-6">
