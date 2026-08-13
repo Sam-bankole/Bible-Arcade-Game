@@ -119,8 +119,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     );
   }
 
-  const currentRound = session.currentRound;
-  const currentAnswers: AnswerItem[] = (currentRound && session.answers[currentRound.id]) || [];
+  const currentRound = session?.currentRound || null;
+  const answersObj = session?.answers || {};
+  const currentAnswers: AnswerItem[] = (currentRound && answersObj[currentRound.id]) || [];
+  const playersObj = session?.players || {};
 
   return (
     <div className="py-6 space-y-6">
@@ -172,7 +174,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 )}
               </span>
               <span>•</span>
-              <span>PLAYERS: <strong className="text-cyan-400 font-mono">{Object.keys(session.players).length}</strong></span>
+              <span>PLAYERS: <strong className="text-cyan-400 font-mono">{Object.keys(playersObj).length}</strong></span>
             </div>
           </div>
         </div>

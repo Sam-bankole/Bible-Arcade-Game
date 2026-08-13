@@ -27,6 +27,26 @@ export function createNewSession(code?: string): GameSession {
   };
 }
 
+export function normalizeSession(raw: any): GameSession {
+  if (!raw || typeof raw !== 'object') {
+    return createNewSession('ARCADE');
+  }
+  return {
+    ...raw,
+    id: raw.id || `sess_${Date.now()}`,
+    code: (raw.code || 'ARCADE').toUpperCase(),
+    currentGame: raw.currentGame || 'LETTER_RUSH',
+    currentRound: raw.currentRound || null,
+    roundHistory: Array.isArray(raw.roundHistory) ? raw.roundHistory : [],
+    players: (raw.players && typeof raw.players === 'object') ? raw.players : {},
+    answers: (raw.answers && typeof raw.answers === 'object') ? raw.answers : {},
+    status: raw.status || 'WAITING',
+    showLeaderboardToPlayers: raw.showLeaderboardToPlayers !== false,
+    createdAt: raw.createdAt || Date.now(),
+    adminPin: raw.adminPin || DEFAULT_ADMIN_PASSWORD
+  };
+}
+
 export class SyncEngine {
   private broadcastChannel: BroadcastChannel | null = null;
   private listeners: Array<(session: GameSession) => void> = [];
@@ -82,7 +102,7 @@ export class SyncEngine {
       const unsub = onValue(sessionRef, (snapshot) => {
         const val = snapshot.val();
         if (val && typeof val === 'object') {
-          const session: GameSession = val;
+          const session: GameSession = normalizeSession(val);
           const key = `${STORAGE_PREFIX}${session.code}`;
           localStorage.setItem(key, JSON.stringify(session));
           localStorage.setItem(`${STORAGE_PREFIX}LATEST_CODE`, session.code);
@@ -104,13 +124,14 @@ export class SyncEngine {
   }
 
   private notifyListeners(session: GameSession) {
-    this.listeners.forEach(cb => cb(session));
+    const cleanSession = normalizeSession(session);
+    this.listeners.forEach(cb => cb(cleanSession));
   }
 
   public saveAndBroadcastSession(session: GameSession) {
     if (typeof window === 'undefined') return;
     // Sanitize session object to remove undefined properties for Firebase set()
-    const cleanSession: GameSession = JSON.parse(JSON.stringify(session));
+    const cleanSession: GameSession = normalizeSession(JSON.parse(JSON.stringify(session)));
 
     const key = `${STORAGE_PREFIX}${cleanSession.code}`;
     localStorage.setItem(key, JSON.stringify(cleanSession));
@@ -138,7 +159,7 @@ export class SyncEngine {
     const raw = localStorage.getItem(`${STORAGE_PREFIX}${code.toUpperCase()}`);
     if (!raw) return null;
     try {
-      return JSON.parse(raw);
+      return normalizeSession(JSON.parse(raw));
     } catch {
       return null;
     }
