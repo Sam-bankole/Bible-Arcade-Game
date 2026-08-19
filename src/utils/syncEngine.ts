@@ -7,11 +7,25 @@ const STORAGE_PREFIX = 'bible_arcade_session_';
 const CHANNEL_NAME = 'bible_arcade_global_channel';
 const ADMIN_AUTH_KEY = 'bible_arcade_admin_authenticated';
 const ADMIN_PASSWORD_KEY = 'bible_arcade_admin_password';
+const KNOWN_SESSIONS_KEY = 'bible_arcade_admin_sessions';
 export const DEFAULT_ADMIN_PASSWORD = 'BIBLE2026!';
 
-// Default initial state generator
+/**
+ * Generate a clean, easily readable 6-character entrance code (e.g. 4L27B1, G152C0).
+ * Excludes ambiguous chars like 0/O, 1/I.
+ */
+export function generate6DigitCode(): string {
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+  let result = '';
+  for (let i = 0; i < 6; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// Default initial state generator with unique 6-digit code
 export function createNewSession(code?: string): GameSession {
-  const sessionCode = (code || 'ARCADE').toUpperCase();
+  const sessionCode = (code ? code.trim() : generate6DigitCode()).toUpperCase();
   return {
     id: `sess_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
     code: sessionCode,
@@ -23,18 +37,19 @@ export function createNewSession(code?: string): GameSession {
     status: 'WAITING',
     showLeaderboardToPlayers: true,
     createdAt: Date.now(),
-    adminPin: DEFAULT_ADMIN_PASSWORD
+    adminPin: DEFAULT_ADMIN_PASSWORD,
+    isEnded: false
   };
 }
 
 export function normalizeSession(raw: any): GameSession {
   if (!raw || typeof raw !== 'object') {
-    return createNewSession('ARCADE');
+    return createNewSession();
   }
   return {
     ...raw,
     id: raw.id || `sess_${Date.now()}`,
-    code: (raw.code || 'ARCADE').toUpperCase(),
+    code: (raw.code || generate6DigitCode()).toUpperCase(),
     currentGame: raw.currentGame || 'LETTER_RUSH',
     currentRound: raw.currentRound || null,
     roundHistory: Array.isArray(raw.roundHistory) ? raw.roundHistory : [],
@@ -43,7 +58,9 @@ export function normalizeSession(raw: any): GameSession {
     status: raw.status || 'WAITING',
     showLeaderboardToPlayers: raw.showLeaderboardToPlayers !== false,
     createdAt: raw.createdAt || Date.now(),
-    adminPin: raw.adminPin || DEFAULT_ADMIN_PASSWORD
+    adminPin: raw.adminPin || DEFAULT_ADMIN_PASSWORD,
+    isEnded: !!raw.isEnded,
+    endedAt: raw.endedAt || undefined
   };
 }
 
@@ -79,12 +96,45 @@ export class SyncEngine {
     }
 
     // 3. Connect Multi-Device Firebase Cloud Real-time Engine
-    this.connectCloudRelay('ARCADE');
+    const initialCode = this.getLatestSessionCode();
+    if (initialCode) {
+      this.connectCloudRelay(initialCode);
+    }
   }
 
-  public connectCloudRelay(sessionCode: string = 'ARCADE') {
+  public getAdminSessions(): string[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(KNOWN_SESSIONS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  public addAdminSession(code: string): void {
     if (typeof window === 'undefined') return;
-    const cleanCode = sessionCode.trim().toUpperCase() || 'ARCADE';
+    const clean = code.trim().toUpperCase();
+    if (!clean) return;
+    const current = this.getAdminSessions();
+    if (!current.includes(clean)) {
+      const updated = [clean, ...current].slice(0, 20);
+      localStorage.setItem(KNOWN_SESSIONS_KEY, JSON.stringify(updated));
+    }
+  }
+
+  public removeAdminSession(code: string): void {
+    if (typeof window === 'undefined') return;
+    const clean = code.trim().toUpperCase();
+    const current = this.getAdminSessions();
+    const filtered = current.filter(c => c !== clean);
+    localStorage.setItem(KNOWN_SESSIONS_KEY, JSON.stringify(filtered));
+  }
+
+  public connectCloudRelay(sessionCode: string) {
+    if (typeof window === 'undefined') return;
+    const cleanCode = sessionCode.trim().toUpperCase();
+    if (!cleanCode) return;
 
     if (this.currentRelayCode === cleanCode && this.firebaseUnsubscribe) {
       return;
@@ -95,6 +145,7 @@ export class SyncEngine {
     }
 
     this.currentRelayCode = cleanCode;
+    this.addAdminSession(cleanCode);
 
     try {
       // Firebase Realtime Database Listener
@@ -136,6 +187,7 @@ export class SyncEngine {
     const key = `${STORAGE_PREFIX}${cleanSession.code}`;
     localStorage.setItem(key, JSON.stringify(cleanSession));
     localStorage.setItem(`${STORAGE_PREFIX}LATEST_CODE`, cleanSession.code);
+    this.addAdminSession(cleanSession.code);
 
     // 1. Firebase Realtime Database Cloud Sync
     try {
@@ -290,19 +342,62 @@ export class SyncEngine {
     return updated;
   }
 
+  public advanceToNextRound(session: GameSession): GameSession {
+    const updated: GameSession = {
+      ...session,
+      currentRound: null,
+      status: 'WAITING'
+    };
+    this.saveAndBroadcastSession(updated);
+    return updated;
+  }
+
+  public endSession(session: GameSession): GameSession {
+    const updated: GameSession = {
+      ...session,
+      status: 'RESULTS',
+      isEnded: true,
+      endedAt: Date.now()
+    };
+    soundFx.playWinner();
+    this.saveAndBroadcastSession(updated);
+    return updated;
+  }
+
   // --- PLAYER ACTIONS ---
 
-  public joinPlayer(session: GameSession, name: string): { session: GameSession; player: Player } {
-    const existingPlayer = Object.values(session.players).find(p => p.name.toLowerCase() === name.trim().toLowerCase());
+  public joinPlayer(session: GameSession, name: string, username?: string): { session: GameSession; player: Player } {
+    const cleanUsername = username ? username.trim().toLowerCase() : undefined;
+    const cleanName = name.trim();
+
+    // Find existing player by username or name
+    const existingPlayer = Object.values(session.players).find(p => 
+      (cleanUsername && p.username && p.username.toLowerCase() === cleanUsername) ||
+      p.name.toLowerCase() === cleanName.toLowerCase()
+    );
     
     if (existingPlayer) {
+      // If user provided a new username, update player record
+      if (cleanUsername && !existingPlayer.username) {
+        const updatedPlayers = {
+          ...session.players,
+          [existingPlayer.id]: {
+            ...existingPlayer,
+            username: cleanUsername
+          }
+        };
+        const updated = { ...session, players: updatedPlayers };
+        this.saveAndBroadcastSession(updated);
+        return { session: updated, player: updatedPlayers[existingPlayer.id] };
+      }
       return { session, player: existingPlayer };
     }
 
     const playerId = `ply_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     const newPlayer: Player = {
       id: playerId,
-      name: name.trim(),
+      name: cleanName,
+      username: cleanUsername,
       sessionId: session.id,
       score: 0,
       joinedAt: Date.now()
@@ -324,7 +419,8 @@ export class SyncEngine {
     session: GameSession, 
     playerId: string, 
     playerName: string, 
-    answerText: string
+    answerText: string,
+    username?: string
   ): GameSession {
     if (!session.currentRound || session.currentRound.status !== 'LIVE') {
       return session; // Round not live
@@ -345,6 +441,7 @@ export class SyncEngine {
       id: `ans_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
       playerId,
       playerName,
+      username,
       roundId,
       answerText: answerText.trim(),
       systemTimestamp: formattedSysTime,

@@ -28,17 +28,19 @@ function getInitialSessionCode(): string {
     const latestCode = syncEngine.getLatestSessionCode();
     if (latestCode) return latestCode;
   }
-  return 'ARCADE';
+  return '';
 }
 
 export function App() {
   const [currentView, setCurrentView] = useState<'LANDING' | 'ADMIN' | 'PLAYER' | 'PROJECTOR'>(() => getViewFromUrl());
   const [session, setSession] = useState<GameSession>(() => {
     const code = getInitialSessionCode();
-    const existing = syncEngine.getSession(code);
-    if (existing) return existing;
+    if (code) {
+      const existing = syncEngine.getSession(code);
+      if (existing) return existing;
+    }
     
-    const initial = createNewSession(code);
+    const initial = createNewSession(code || undefined);
     syncEngine.saveAndBroadcastSession(initial);
     return initial;
   });
@@ -182,6 +184,36 @@ export function App() {
     setSession(updated);
   };
 
+  const handleCreateNewSession = (customCode?: string) => {
+    const newSession = createNewSession(customCode);
+    syncEngine.saveAndBroadcastSession(newSession);
+    setSession(newSession);
+    syncEngine.connectCloudRelay(newSession.code);
+  };
+
+  const handleSwitchSession = (code: string) => {
+    const existing = syncEngine.getSession(code);
+    if (existing) {
+      setSession(existing);
+      syncEngine.connectCloudRelay(existing.code);
+    } else {
+      const newSession = createNewSession(code);
+      syncEngine.saveAndBroadcastSession(newSession);
+      setSession(newSession);
+      syncEngine.connectCloudRelay(newSession.code);
+    }
+  };
+
+  const handleAdvanceToNextRound = () => {
+    const updated = syncEngine.advanceToNextRound(session);
+    setSession(updated);
+  };
+
+  const handleEndSession = () => {
+    const updated = syncEngine.endSession(session);
+    setSession(updated);
+  };
+
   const handleResetSession = () => {
     const reset = syncEngine.resetSession(session);
     setSession(reset);
@@ -216,6 +248,10 @@ export function App() {
         {currentView === 'ADMIN' && (
           <AdminDashboard
             session={session}
+            onCreateNewSession={handleCreateNewSession}
+            onSwitchSession={handleSwitchSession}
+            onEndSession={handleEndSession}
+            onAdvanceToNextRound={handleAdvanceToNextRound}
             onUpdateSessionCode={(newCode) => {
               const updated = syncEngine.updateSessionCode(session, newCode);
               setSession(updated);

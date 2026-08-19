@@ -25,6 +25,7 @@ export interface GameInfo {
 export interface Player {
   id: string;
   name: string;
+  username?: string;
   sessionId: string;
   score: number;
   joinedAt: number;
@@ -34,6 +35,7 @@ export interface AnswerItem {
   id: string;
   playerId: string;
   playerName: string;
+  username?: string;
   roundId: string;
   answerText: string;
   systemTimestamp: string;  // Format: HH:mm:ss.SSS
@@ -91,6 +93,8 @@ export interface GameSession {
   showLeaderboardToPlayers: boolean;
   createdAt: number;
   adminPin: string;
+  isEnded?: boolean;
+  endedAt?: number;
 }
 
 export interface PresetQuestion {
