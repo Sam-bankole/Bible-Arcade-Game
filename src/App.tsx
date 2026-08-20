@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import type { GameSession, Player, GameType, GameRound } from './types/game';
+import type { UserIdentity } from './types/game';
 import { syncEngine, createNewSession } from './utils/syncEngine';
+import { getLocalIdentity } from './utils/userIdentity';
 import { Navbar } from './components/Navbar';
 import { StageBackground } from './components/StageBackground';
+import { UsernameSetup } from './components/UsernameSetup';
 import { LandingPage } from './components/LandingPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { PlayerView } from './components/PlayerView';
@@ -20,42 +23,56 @@ function getViewFromUrl(): 'LANDING' | 'ADMIN' | 'PLAYER' | 'PROJECTOR' {
   return 'LANDING';
 }
 
-function getInitialSessionCode(): string {
-  if (typeof window !== 'undefined') {
-    const params = new URLSearchParams(window.location.search);
-    const urlCode = params.get('code');
-    if (urlCode && urlCode.trim()) return urlCode.trim().toUpperCase();
-    
-    const latestCode = syncEngine.getLatestSessionCode();
-    if (latestCode) return latestCode;
-  }
-  return '';
-}
-
 export function App() {
   const [currentView, setCurrentView] = useState<'LANDING' | 'ADMIN' | 'PLAYER' | 'PROJECTOR'>(() => getViewFromUrl());
-  const [session, setSession] = useState<GameSession>(() => {
-    const code = getInitialSessionCode();
-    if (code) {
-      const existing = syncEngine.getSession(code);
-      if (existing) return existing;
-    }
-    
-    const initial = createNewSession(code || undefined);
-    syncEngine.saveAndBroadcastSession(initial);
-    return initial;
-  });
 
+  // Permanent player identity — loaded from localStorage on mount
+  const [currentIdentity, setCurrentIdentity] = useState<UserIdentity | null>(() => getLocalIdentity());
+
+  // Active game session — starts as null; players join via code, admins create explicitly
+  const [session, setSession] = useState<GameSession | null>(null);
+
+  // Currently joined player within the session
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
 
-  // Sync view state with browser back/forward buttons and URL changes
+  // Non-blocking error for "session not found" / "session ended"
+  const [sessionError, setSessionError] = useState<string>('');
+
+  // Sync view with browser back/forward buttons
   useEffect(() => {
-    const handlePopState = () => {
-      setCurrentView(getViewFromUrl());
-    };
+    const handlePopState = () => setCurrentView(getViewFromUrl());
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // Connect to Firebase relay when session code changes
+  useEffect(() => {
+    if (session?.code) {
+      syncEngine.connectCloudRelay(session.code);
+    }
+  }, [session?.code]);
+
+  // Subscribe to real-time session updates
+  useEffect(() => {
+    const unsubscribe = syncEngine.subscribe((updatedSession) => {
+      if (updatedSession && session && updatedSession.code === session.code) {
+        setSession(updatedSession);
+        if (currentPlayer && updatedSession.players[currentPlayer.id]) {
+          setCurrentPlayer(updatedSession.players[currentPlayer.id]);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [session?.code, currentPlayer]);
+
+  // Timer tick for live rounds
+  useEffect(() => {
+    if (!session?.currentRound || session.currentRound.status !== 'LIVE' || session.currentRound.timerDuration === 0) return;
+    const interval = setInterval(() => {
+      setSession(prev => prev ? syncEngine.tickTimer(prev) : prev);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [session?.currentRound?.status, session?.currentRound?.remainingSeconds, session?.currentRound?.timerDuration]);
 
   const navigateTo = (view: 'LANDING' | 'ADMIN' | 'PLAYER' | 'PROJECTOR') => {
     setCurrentView(view);
@@ -64,124 +81,113 @@ export function App() {
       if (view === 'ADMIN') targetPath = '/admin';
       else if (view === 'PROJECTOR') targetPath = '/projector';
       else if (view === 'PLAYER') targetPath = '/play';
-
       if (window.location.pathname !== targetPath) {
         window.history.pushState({}, '', targetPath);
       }
     }
   };
 
-  // Ensure cloud relay connects to active session code
-  useEffect(() => {
-    if (session.code) {
-      syncEngine.connectCloudRelay(session.code);
-    }
-  }, [session.code]);
+  // ── Identity handlers ────────────────────────────────────────────────────────
 
-  // Subscribe to real-time state sync across devices, WebSocket, and local storage
-  useEffect(() => {
-    const unsubscribe = syncEngine.subscribe((updatedSession) => {
-      if (updatedSession) {
-        setSession(updatedSession);
-        
-        // Also keep player state updated if score changed
-        if (currentPlayer && updatedSession.players[currentPlayer.id]) {
-          setCurrentPlayer(updatedSession.players[currentPlayer.id]);
-        }
-      }
-    });
-    return () => unsubscribe();
-  }, [session.code, currentPlayer]);
+  const handleIdentityReady = (identity: UserIdentity) => {
+    setCurrentIdentity(identity);
+  };
 
-  // Active round timer tick interval
-  useEffect(() => {
-    if (!session.currentRound || session.currentRound.status !== 'LIVE' || session.currentRound.timerDuration === 0) {
+  const handleSignOut = () => {
+    setCurrentIdentity(null);
+    setSession(null);
+    setCurrentPlayer(null);
+    setSessionError('');
+  };
+
+  // ── Player join handler — looks up session; never creates one ────────────────
+
+  const handleJoinPlayer = async (code: string) => {
+    if (!currentIdentity) return;
+    setSessionError('');
+
+    const found = await syncEngine.lookupSession(code.toUpperCase());
+    if (!found) {
+      setSessionError(`No active game found for code "${code}". Check the code and try again.`);
       return;
     }
 
-    const interval = setInterval(() => {
-      setSession(prev => syncEngine.tickTimer(prev));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [session.currentRound?.status, session.currentRound?.remainingSeconds, session.currentRound?.timerDuration]);
-
-  // --- Handlers ---
-
-  const handleUpdateGameType = (gameType: GameType) => {
-    const updated = syncEngine.updateGameType(session, gameType);
-    setSession(updated);
-  };
-
-  const handleStartRound = (roundData: Partial<GameRound>) => {
-    const updated = syncEngine.startNewRound(session, roundData);
-    setSession(updated);
-  };
-
-  const handleSetRoundState = (status: 'WAITING' | 'LIVE' | 'CLOSED' | 'REVIEW' | 'RESULTS') => {
-    const updated = syncEngine.setRoundState(session, status);
-    setSession(updated);
-  };
-
-  const handleUpdateOfficialTimestamp = (answerId: string, timestamp: string) => {
-    if (!session.currentRound) return;
-    const updated = syncEngine.updateOfficialTimestamp(session, session.currentRound.id, answerId, timestamp);
-    setSession(updated);
-  };
-
-  const handleEvaluateAnswer = (
-    answerId: string, 
-    status: 'CORRECT' | 'WRONG' | 'PENDING', 
-    points: number, 
-    isWinner: boolean = false
-  ) => {
-    if (!session.currentRound) return;
-    const updated = syncEngine.evaluateAnswer(session, session.currentRound.id, answerId, status, points, isWinner);
-    setSession(updated);
-  };
-
-  const handleToggleLeaderboard = (visible: boolean) => {
-    const updated = syncEngine.toggleLeaderboardVisibility(session, visible);
-    setSession(updated);
-  };
-
-  const handleUpdatePlayerScore = (playerId: string, newScore: number) => {
-    const updatedPlayers = {
-      ...session.players,
-      [playerId]: {
-        ...session.players[playerId],
-        score: newScore
-      }
-    };
-    const updated: GameSession = { ...session, players: updatedPlayers };
-    syncEngine.saveAndBroadcastSession(updated);
-    setSession(updated);
-  };
-
-  const handleJoinPlayer = (code: string, name: string) => {
-    let targetSession = session;
-    if (code.toUpperCase() !== session.code) {
-      const found = syncEngine.getSession(code.toUpperCase());
-      if (found) {
-        targetSession = found;
-        setSession(found);
-      } else {
-        // Create or join session with code
-        targetSession = createNewSession(code.toUpperCase());
-        syncEngine.saveAndBroadcastSession(targetSession);
-        setSession(targetSession);
-      }
-    }
-
-    const { session: updatedSess, player } = syncEngine.joinPlayer(targetSession, name);
+    const { session: updatedSess, player } = syncEngine.joinPlayer(
+      found,
+      currentIdentity.uid,
+      currentIdentity.displayName,
+      currentIdentity.username
+    );
     setSession(updatedSess);
     setCurrentPlayer(player);
     navigateTo('PLAYER');
   };
 
+  // ── Answer submission ────────────────────────────────────────────────────────
+
   const handleSubmitAnswer = (answerText: string) => {
-    if (!currentPlayer) return;
-    const updated = syncEngine.submitAnswer(session, currentPlayer.id, currentPlayer.name, answerText);
+    if (!currentPlayer || !session) return;
+    const updated = syncEngine.submitAnswer(
+      session,
+      currentPlayer.id,
+      currentPlayer.name,
+      answerText,
+      currentPlayer.username
+    );
+    setSession(updated);
+  };
+
+  // ── Admin handlers (unchanged from original) ─────────────────────────────────
+
+  const handleUpdateGameType = (gameType: GameType) => {
+    if (!session) return;
+    const updated = syncEngine.updateGameType(session, gameType);
+    setSession(updated);
+  };
+
+  const handleStartRound = (roundData: Partial<GameRound>) => {
+    if (!session) return;
+    const updated = syncEngine.startNewRound(session, roundData);
+    setSession(updated);
+  };
+
+  const handleSetRoundState = (status: 'WAITING' | 'LIVE' | 'CLOSED' | 'REVIEW' | 'RESULTS') => {
+    if (!session) return;
+    const updated = syncEngine.setRoundState(session, status);
+    setSession(updated);
+  };
+
+  const handleUpdateOfficialTimestamp = (answerId: string, timestamp: string) => {
+    if (!session?.currentRound) return;
+    const updated = syncEngine.updateOfficialTimestamp(session, session.currentRound.id, answerId, timestamp);
+    setSession(updated);
+  };
+
+  const handleEvaluateAnswer = (
+    answerId: string,
+    status: 'CORRECT' | 'WRONG' | 'PENDING',
+    points: number,
+    isWinner: boolean = false
+  ) => {
+    if (!session?.currentRound) return;
+    const updated = syncEngine.evaluateAnswer(session, session.currentRound.id, answerId, status, points, isWinner);
+    setSession(updated);
+  };
+
+  const handleToggleLeaderboard = (visible: boolean) => {
+    if (!session) return;
+    const updated = syncEngine.toggleLeaderboardVisibility(session, visible);
+    setSession(updated);
+  };
+
+  const handleUpdatePlayerScore = (playerId: string, newScore: number) => {
+    if (!session) return;
+    const updatedPlayers = {
+      ...session.players,
+      [playerId]: { ...session.players[playerId], score: newScore }
+    };
+    const updated: GameSession = { ...session, players: updatedPlayers };
+    syncEngine.saveAndBroadcastSession(updated);
     setSession(updated);
   };
 
@@ -206,20 +212,38 @@ export function App() {
   };
 
   const handleAdvanceToNextRound = () => {
+    if (!session) return;
     const updated = syncEngine.advanceToNextRound(session);
     setSession(updated);
   };
 
   const handleEndSession = () => {
+    if (!session) return;
     const updated = syncEngine.endSession(session);
     setSession(updated);
   };
 
   const handleResetSession = () => {
+    if (!session) return;
     const reset = syncEngine.resetSession(session);
     setSession(reset);
     setCurrentPlayer(null);
   };
+
+  // ── Render ───────────────────────────────────────────────────────────────────
+
+  // Admin view — bypasses identity requirement (admins use password auth)
+  const isAdminOrProjector = currentView === 'ADMIN' || currentView === 'PROJECTOR';
+
+  // For player-facing views, require identity first
+  if (!isAdminOrProjector && !currentIdentity) {
+    return (
+      <div className="min-h-screen bg-[#06080e] text-slate-100 font-main relative overflow-x-hidden">
+        <StageBackground />
+        <UsernameSetup onIdentityReady={handleIdentityReady} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#06080e] text-slate-100 font-main relative overflow-x-hidden">
@@ -231,7 +255,7 @@ export function App() {
       {currentView !== 'PROJECTOR' && (
         <Navbar
           currentView={currentView}
-          sessionCode={session.code}
+          sessionCode={session?.code || ''}
           onNavigate={(v) => navigateTo(v)}
           onResetSession={handleResetSession}
         />
@@ -239,24 +263,29 @@ export function App() {
 
       {/* Main Container */}
       <main className={`${currentView === 'ADMIN' ? 'arcade-admin-container' : 'arcade-container'} pb-12`}>
-        {currentView === 'LANDING' && (
+
+        {currentView === 'LANDING' && currentIdentity && (
           <LandingPage
-            sessionCode={session.code}
+            sessionCode={session?.code || ''}
+            identity={currentIdentity}
             onJoinPlayer={handleJoinPlayer}
             onNavigateAdmin={() => navigateTo('ADMIN')}
             onNavigateProjector={() => navigateTo('PROJECTOR')}
             onSelectGame={handleUpdateGameType}
+            onSignOut={handleSignOut}
+            sessionError={sessionError}
           />
         )}
 
         {currentView === 'ADMIN' && (
           <AdminDashboard
-            session={session}
+            session={session || createNewSession()}
             onCreateNewSession={handleCreateNewSession}
             onSwitchSession={handleSwitchSession}
             onEndSession={handleEndSession}
             onAdvanceToNextRound={handleAdvanceToNextRound}
             onUpdateSessionCode={(newCode) => {
+              if (!session) return;
               const updated = syncEngine.updateSessionCode(session, newCode);
               setSession(updated);
             }}
@@ -283,7 +312,7 @@ export function App() {
 
         {currentView === 'PROJECTOR' && (
           <ProjectorDisplay
-            session={session}
+            session={session || createNewSession()}
             onExit={() => navigateTo('ADMIN')}
           />
         )}
