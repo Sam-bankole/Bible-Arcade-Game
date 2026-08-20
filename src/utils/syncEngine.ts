@@ -94,12 +94,8 @@ export class SyncEngine {
         }
       });
     }
-
-    // 3. Connect Multi-Device Firebase Cloud Real-time Engine
-    const initialCode = this.getLatestSessionCode();
-    if (initialCode) {
-      this.connectCloudRelay(initialCode);
-    }
+    // NOTE: We do NOT auto-connect to the last session on startup.
+    // Players must explicitly enter a session code to join.
   }
 
   public getAdminSessions(): string[] {
@@ -203,6 +199,34 @@ export class SyncEngine {
         type: 'SYNC_STATE',
         session: cleanSession
       });
+    }
+  }
+
+  /**
+   * Look up a session from Firebase by code.
+   * Returns the session if it exists and is active, or null.
+   * Players use this — they CANNOT create sessions.
+   */
+  public async lookupSession(code: string): Promise<GameSession | null> {
+    const cleanCode = code.trim().toUpperCase();
+    if (!cleanCode) return null;
+
+    // First try local cache
+    const cached = this.getSession(cleanCode);
+    if (cached && !cached.isEnded) return cached;
+
+    // Fall back to Firebase
+    try {
+      const { ref: fbRef, get: fbGet } = await import('./firebase').then(m => ({ ref: m.ref, get: m.get }));
+      const { db } = await import('./firebase');
+      const snap = await fbGet(fbRef(db, `arcade_sessions/${cleanCode}`));
+      if (!snap.exists()) return null;
+      const session = normalizeSession(snap.val());
+      if (session.isEnded) return null;
+      return session;
+    } catch (err) {
+      console.error('[SyncEngine] lookupSession error:', err);
+      return null;
     }
   }
 
@@ -366,36 +390,28 @@ export class SyncEngine {
 
   // --- PLAYER ACTIONS ---
 
-  public joinPlayer(session: GameSession, name: string, username?: string): { session: GameSession; player: Player } {
-    const cleanUsername = username ? username.trim().toLowerCase() : undefined;
-    const cleanName = name.trim();
+  public joinPlayer(
+    session: GameSession,
+    uid: string,
+    displayName: string,
+    username: string
+  ): { session: GameSession; player: Player } {
+    const cleanUsername = username.trim().toLowerCase();
+    const cleanName = displayName.trim();
 
-    // Find existing player by username or name
-    const existingPlayer = Object.values(session.players).find(p => 
-      (cleanUsername && p.username && p.username.toLowerCase() === cleanUsername) ||
-      p.name.toLowerCase() === cleanName.toLowerCase()
+    // Find existing player by uid or username (rejoin support)
+    const existingPlayer = Object.values(session.players).find(p =>
+      p.uid === uid || p.username.toLowerCase() === cleanUsername
     );
-    
+
     if (existingPlayer) {
-      // If user provided a new username, update player record
-      if (cleanUsername && !existingPlayer.username) {
-        const updatedPlayers = {
-          ...session.players,
-          [existingPlayer.id]: {
-            ...existingPlayer,
-            username: cleanUsername
-          }
-        };
-        const updated = { ...session, players: updatedPlayers };
-        this.saveAndBroadcastSession(updated);
-        return { session: updated, player: updatedPlayers[existingPlayer.id] };
-      }
       return { session, player: existingPlayer };
     }
 
     const playerId = `ply_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
     const newPlayer: Player = {
       id: playerId,
+      uid,
       name: cleanName,
       username: cleanUsername,
       sessionId: session.id,
