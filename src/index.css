@@ -4,16 +4,16 @@
 @layer base {
   :root {
     /* CSTACTICS Dark Gunmetal & Graphite Canvas */
-    --bg-canvas: #06080e;
-    --bg-surface: #0e121d;
-    --bg-surface-raised: #151a28;
-    --bg-surface-hover: #1c2335;
-    --bg-input: #090c14;
+    --bg-canvas: #07090e;
+    --bg-surface: #0e131f;
+    --bg-surface-raised: #141a29;
+    --bg-surface-hover: #1b2336;
+    --bg-input: #080b12;
 
     /* Hairline Esports Borders */
     --border-subtle: #1c2438;
-    --border-muted: #28334e;
-    --border-strong: #3e4e76;
+    --border-muted: #27334d;
+    --border-strong: #3b4c73;
 
     /* CSTACTICS Hero Accent: Electric Lime / Cyber Volt */
     --neon-lime: #ccff00;
@@ -48,37 +48,6 @@
     width: 100%;
     min-height: 100vh;
     background-color: var(--bg-canvas);
-    /* High-Visibility Rich Multi-Layer Background */
-    background-image: 
-      /* Layer 1: Vivid Violet Aurora Spotlight Top-Left */
-      radial-gradient(circle 900px at 15% -5%, rgba(139, 92, 246, 0.35), transparent 70%),
-      /* Layer 2: Vivid Cyber Cyan Glow Bottom-Right */
-      radial-gradient(circle 850px at 88% 95%, rgba(6, 182, 212, 0.28), transparent 65%),
-      /* Layer 3: Center Electric Lime Ambient Bloom */
-      radial-gradient(circle 600px at 60% 40%, rgba(204, 255, 0, 0.09), transparent 60%),
-      /* Layer 4: Prominent Cyber Dot Matrix Mesh */
-      radial-gradient(rgba(204, 255, 0, 0.18) 1.5px, transparent 1.5px),
-      radial-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px),
-      /* Layer 5: Distinct Digital Grid Lines */
-      linear-gradient(to right, rgba(139, 92, 246, 0.06) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(6, 182, 212, 0.06) 1px, transparent 1px);
-    background-size: 
-      100% 100%, 
-      100% 100%, 
-      100% 100%, 
-      48px 48px, 
-      24px 24px, 
-      96px 96px, 
-      96px 96px;
-    background-position: 
-      0 0, 
-      0 0, 
-      0 0, 
-      0 0, 
-      12px 12px, 
-      0 0, 
-      0 0;
-    background-attachment: fixed;
     color: var(--text-primary);
     font-family: var(--font-sans);
     overflow-x: hidden;
@@ -113,9 +82,282 @@
   letter-spacing: -0.02em;
 }
 
-/* CSTACTICS Card Surface with Backdrop Blur and Crisp Edge */
+/* ══════════════════════════════════════════════════════════
+   USERNAME SETUP — su-* class system
+   ══════════════════════════════════════════════════════════ */
+
+.su-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 20px 16px 40px;
+  gap: 16px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* Wordmark */
+.su-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  align-self: center;
+  text-align: center;
+}
+
+.su-wordmark-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background-color: rgba(204, 255, 0, 0.08);
+  border: 1px solid rgba(204, 255, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.su-wordmark-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.su-wordmark-sub {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+/* Card */
+.su-card {
+  width: 100%;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-muted);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.6);
+}
+
+/* Tabs */
+.su-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.su-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 13px 8px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.su-tab:hover {
+  color: var(--text-secondary);
+  background-color: var(--bg-surface-raised);
+}
+.su-tab--active {
+  color: var(--neon-lime);
+  border-bottom: 2px solid var(--neon-lime);
+  background-color: rgba(204, 255, 0, 0.04);
+}
+
+/* Body */
+.su-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+@media (min-width: 640px) {
+  .su-body {
+    padding: 20px;
+  }
+}
+
+/* Error banner */
+.su-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background-color: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #fca5a5;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+/* Form */
+.su-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.su-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.su-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.su-label-note {
+  font-weight: 400;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.su-input {
+  width: 100%;
+  background-color: var(--bg-input);
+  border: 1.5px solid var(--border-muted);
+  border-radius: 10px;
+  padding: 11px 13px;
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.su-input::placeholder { color: var(--text-muted); }
+.su-input:focus {
+  border-color: var(--neon-lime);
+  background-color: var(--bg-surface);
+}
+.su-input--mono { font-family: var(--font-mono); }
+.su-input--pin {
+  text-align: center;
+  letter-spacing: 0.45em;
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding-right: 36px;
+}
+.su-input--error { border-color: #f43f5e !important; }
+.su-input--ok    { border-color: #22c55e !important; }
+
+/* PIN row */
+.su-pin-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.su-pin-wrap {
+  position: relative;
+}
+
+.su-pin-eye {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+.su-pin-eye:hover { color: var(--text-primary); }
+
+/* Availability note */
+.su-avail {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.su-avail--checking { color: var(--text-muted); }
+.su-avail--ok       { color: #4ade80; }
+.su-avail--taken    { color: #f87171; }
+.su-avail--invalid  { color: #fbbf24; }
+
+/* Hint */
+.su-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  line-height: 1.4;
+}
+.su-hint--center { text-align: center; }
+
+/* Primary button */
+.su-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 13px 18px;
+  background-color: var(--neon-lime);
+  color: #060902;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+  margin-top: 4px;
+}
+.su-btn-primary:hover:not(:disabled) {
+  background-color: var(--neon-lime-hover);
+  box-shadow: 0 0 20px rgba(204, 255, 0, 0.3);
+}
+.su-btn-primary:active:not(:disabled) { transform: translateY(1px); }
+.su-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.su-footer-note {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.4;
+  max-width: 300px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   ADMIN / SHARED UTILITIES
+   ══════════════════════════════════════════════════════════ */
+
 .tactics-card {
-  background-color: rgba(14, 18, 29, 0.88);
+  background-color: rgba(14, 19, 31, 0.92);
   backdrop-filter: blur(16px);
   border: 1px solid var(--border-subtle);
   border-radius: 14px;
@@ -123,42 +365,12 @@
 }
 
 .tactics-card-raised {
-  background-color: rgba(21, 26, 40, 0.92);
+  background-color: rgba(20, 26, 41, 0.95);
   backdrop-filter: blur(16px);
   border: 1px solid var(--border-muted);
   border-radius: 14px;
 }
 
-/* Stat Box - Regular */
-.tactics-stat-box {
-  background-color: rgba(14, 18, 29, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 12px 14px;
-  transition: border-color 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
-}
-.tactics-stat-box:hover {
-  border-color: var(--border-muted);
-  background-color: rgba(21, 26, 40, 0.95);
-}
-
-/* Stat Box - Active Hero Lime (Matching the 68% Endurance in the screenshot!) */
-.tactics-stat-box-hero {
-  background-color: var(--neon-lime);
-  color: var(--neon-lime-text);
-  border: 1px solid var(--neon-lime);
-  border-radius: 12px;
-  padding: 12px 14px;
-}
-.tactics-stat-box-hero .stat-value {
-  color: #060902 !important;
-}
-.tactics-stat-box-hero .stat-label {
-  color: #1a2205 !important;
-}
-
-/* Esports Action Buttons */
 .tactics-btn {
   display: inline-flex;
   align-items: center;
@@ -175,12 +387,10 @@
   transition: all 0.15s ease;
   white-space: nowrap;
 }
-
 .tactics-btn:active {
   transform: translateY(1px);
 }
 
-/* Hero Lime Primary Button (e.g. Buy + / Start Round) */
 .tactics-btn-primary {
   background-color: var(--neon-lime);
   color: #060902;
@@ -192,9 +402,8 @@
   box-shadow: 0 0 20px rgba(204, 255, 0, 0.45);
 }
 
-/* Secondary Button */
 .tactics-btn-secondary {
-  background-color: rgba(21, 26, 40, 0.9);
+  background-color: rgba(20, 26, 41, 0.9);
   border-color: var(--border-muted);
   color: var(--text-primary);
 }
@@ -203,7 +412,6 @@
   border-color: var(--border-strong);
 }
 
-/* Tag Pills */
 .tactics-pill-lime {
   background-color: rgba(204, 255, 0, 0.12);
   color: #ccff00;
@@ -216,29 +424,6 @@
   letter-spacing: 0.04em;
 }
 
-.tactics-pill-violet {
-  background-color: rgba(139, 92, 246, 0.15);
-  color: #c4b5fd;
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-}
-
-.tactics-pill-cyan {
-  background-color: rgba(6, 182, 212, 0.15);
-  color: #67e8f9;
-  border: 1px solid rgba(6, 182, 212, 0.35);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-  text-transform: uppercase;
-}
-
-/* Esports Input */
 .tactics-input {
   width: 100%;
   background-color: var(--bg-input);
@@ -256,12 +441,11 @@
   background-color: var(--bg-surface);
 }
 
-/* Responsive Containers */
 .arcade-admin-container {
   max-width: 1560px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 12px;
 }
 @media (min-width: 640px) {
   .arcade-admin-container {
@@ -277,5 +461,10 @@
 .arcade-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 12px;
+}
+@media (min-width: 640px) {
+  .arcade-container {
+    padding: 0 16px;
+  }
 }
