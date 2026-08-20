@@ -25,9 +25,9 @@ export const AnswerQueue: React.FC<AnswerQueueProps> = ({
 
   if (!currentRound) {
     return (
-      <div className="ctrl-card p-10 text-center">
-        <p className="text-sm font-semibold text-zinc-300">No round currently active</p>
-        <p className="text-xs text-zinc-500 mt-1">Start a round to begin receiving and scoring contestant submissions.</p>
+      <div className="tactics-card p-10 text-center border border-[#1c2438]">
+        <p className="text-sm font-black text-white uppercase tracking-wider">Awaiting Active Round</p>
+        <p className="text-xs text-slate-400 mt-1">Start a round in the form on the left to begin receiving live submissions.</p>
       </div>
     );
   }
@@ -68,102 +68,102 @@ export const AnswerQueue: React.FC<AnswerQueueProps> = ({
   const wrongCount = answers.filter(a => a.status === 'WRONG').length;
 
   return (
-    <div className="ctrl-card p-4 sm:p-5 space-y-4">
+    <div className="tactics-card p-4 sm:p-5 space-y-4">
       
       {/* Header Strip */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#232838]">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-[#1c2438]">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-100">
-              Live Submissions
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-sm font-black uppercase tracking-wider text-white">
+              Live Answer Queue
             </h3>
-            <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded bg-[#1c202d] text-zinc-300 border border-[#2e354a]">
-              {answers.length} {answers.length === 1 ? 'entry' : 'entries'}
+            <span className="font-mono-tabular text-xs font-black px-2.5 py-0.5 rounded-full bg-[#151a28] text-[#ccff00] border border-[#28334e]">
+              {answers.length} {answers.length === 1 ? 'Entry' : 'Entries'}
             </span>
           </div>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Ranked strictly by arrival timestamp (fastest buzzer first)
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            Ranked in real-time by millisecond buzzer speed
           </p>
         </div>
 
-        {/* Expected Answer / Reference Indicator */}
+        {/* Expected Answer Badge */}
         {currentRound && (
-          <div className="text-xs px-3 py-1.5 rounded bg-[#10121a] border border-[#2e354a] flex items-center gap-2">
-            <span className="text-zinc-500 font-bold uppercase text-[10px] tracking-wider">EXPECTED:</span>
-            <span className="font-mono-tabular font-bold text-amber-400">
-              {currentRound.correctAnswerText || 'Manual Evaluation'}
+          <div className="text-xs px-3 py-1.5 rounded-lg bg-[#090c14] border border-[#28334e] flex items-center gap-2">
+            <span className="text-slate-400 font-black uppercase text-[10px] tracking-wider">EXPECTED:</span>
+            <span className="font-mono-tabular font-black text-[#ccff00]">
+              {currentRound.correctAnswerText || 'Manual Grading'}
             </span>
           </div>
         )}
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 bg-[#10121a] p-2 rounded-lg border border-[#232838]">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 bg-[#090c14] p-2 rounded-xl border border-[#1c2438]">
         
         {/* Status Filter Buttons */}
-        <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="flex items-center gap-1.5 overflow-x-auto">
           <button
             onClick={() => setStatusFilter('ALL')}
-            className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
               statusFilter === 'ALL' 
-                ? 'bg-zinc-200 text-zinc-900 font-bold' 
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1a1e2a]'
+                ? 'bg-[#151a28] text-white border border-[#3e4e76] font-black' 
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             <span>All</span>
-            <span className="font-mono-tabular text-[11px] opacity-75">{answers.length}</span>
+            <span className="font-mono-tabular text-[10px] opacity-70">({answers.length})</span>
           </button>
 
           <button
             onClick={() => setStatusFilter('PENDING')}
-            className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
               statusFilter === 'PENDING' 
-                ? 'bg-amber-500 text-zinc-950 font-bold' 
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1a1e2a]'
+                ? 'bg-[#151a28] text-amber-300 border border-amber-500/40 font-black' 
+                : 'text-slate-400 hover:text-amber-300'
             }`}
           >
             <span>Pending</span>
-            <span className="font-mono-tabular text-[11px] opacity-75">{pendingCount}</span>
+            <span className="font-mono-tabular text-[10px] opacity-70">({pendingCount})</span>
           </button>
 
           <button
             onClick={() => setStatusFilter('CORRECT')}
-            className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
               statusFilter === 'CORRECT' 
-                ? 'bg-emerald-600 text-white font-bold' 
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1a1e2a]'
+                ? 'bg-[#151a28] text-[#ccff00] border border-[#ccff00]/40 font-black' 
+                : 'text-slate-400 hover:text-[#ccff00]'
             }`}
           >
             <span>Correct</span>
-            <span className="font-mono-tabular text-[11px] opacity-75">{correctCount}</span>
+            <span className="font-mono-tabular text-[10px] opacity-70">({correctCount})</span>
           </button>
 
           <button
             onClick={() => setStatusFilter('WRONG')}
-            className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
               statusFilter === 'WRONG' 
-                ? 'bg-rose-600 text-white font-bold' 
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#1a1e2a]'
+                ? 'bg-[#151a28] text-rose-400 border border-rose-500/40 font-black' 
+                : 'text-slate-400 hover:text-rose-400'
             }`}
           >
             <span>Rejected</span>
-            <span className="font-mono-tabular text-[11px] opacity-75">{wrongCount}</span>
+            <span className="font-mono-tabular text-[10px] opacity-70">({wrongCount})</span>
           </button>
         </div>
 
         {/* Search Input */}
-        <div className="relative min-w-[200px]">
+        <div className="relative min-w-[190px]">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Filter contestant or text..."
-            className="ctrl-input py-1 text-xs pl-3 pr-7"
+            placeholder="Search contestant or answer..."
+            className="tactics-input py-1 text-xs pl-2.5 pr-7 bg-[#151a28]"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -171,198 +171,199 @@ export const AnswerQueue: React.FC<AnswerQueueProps> = ({
         </div>
       </div>
 
-      {/* Answers Scoreboard Strip Feed */}
+      {/* Answers Scoreboard Feed */}
       {filteredAnswers.length === 0 ? (
-        <div className="text-center py-12 text-zinc-500 bg-[#10121a] rounded-lg border border-dashed border-[#232838]">
-          <p className="text-sm font-medium text-zinc-300">
-            {answers.length === 0 ? 'Awaiting incoming contestant submissions...' : 'No entries match current filter'}
+        <div className="text-center py-12 text-slate-500 bg-[#090c14] rounded-xl border border-dashed border-[#1c2130]">
+          <p className="text-sm font-bold text-slate-300">
+            {answers.length === 0 ? 'Awaiting incoming contestant submissions...' : 'No entries match filter'}
           </p>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             {answers.length === 0 
-              ? 'Answers submitted by players will appear immediately in exact arrival order.' 
-              : 'Try clearing the search or switching filter tabs.'}
+              ? 'Players submitting answers on their phones will appear here instantly.' 
+              : 'Try clearing your search term.'}
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {filteredAnswers.map((ans) => {
             const isEditing = editingId === ans.id;
             const arrivalRank = answers.findIndex(a => a.id === ans.id) + 1;
             const formattedRank = String(arrivalRank).padStart(2, '0');
+            const isHeroSpot = arrivalRank === 1 || ans.isWinner;
             const isCustomPointsOpen = customPointId === ans.id;
 
             return (
               <div 
                 key={ans.id}
-                className={`rounded-lg border transition-colors ${
-                  ans.isWinner 
-                    ? 'bg-[#1c1a14] border-amber-500/50 border-l-4 border-l-amber-500' 
+                className={`rounded-xl border transition-all duration-150 p-3.5 sm:p-4 space-y-3 ${
+                  isHeroSpot
+                    ? 'bg-[#151a28] border-[#ccff00]/60 border-l-4 border-l-[#ccff00] shadow-[0_0_24px_rgba(204,255,0,0.16)]' 
                     : ans.status === 'CORRECT' 
-                      ? 'bg-[#121c17] border-emerald-500/30 border-l-4 border-l-emerald-500' 
+                      ? 'bg-[#101420] border-[#28334e] opacity-100' 
                       : ans.status === 'WRONG'
-                        ? 'bg-[#1c1214] border-rose-500/30 border-l-4 border-l-rose-500 opacity-80'
-                        : 'bg-[#141720] border-[#232838] hover:border-[#2f364a]'
+                        ? 'bg-[#090c14] border-[#1c2130] opacity-40'
+                        : 'bg-[#101420] border-[#28334e] opacity-90'
                 }`}
               >
-                <div className="p-3 sm:p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                {/* ── ROW 1: HEADER (Rank + Contestant + Speed & Timestamp) ── */}
+                <div className="flex items-center justify-between gap-2 flex-wrap">
                   
-                  {/* Left: Scoreboard Rank + Player + Answer */}
-                  <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                  {/* Left: Rank + Name + Badges */}
+                  <div className="flex items-center gap-2.5 flex-wrap">
                     
-                    {/* Big Hero Arrival Order Rank */}
-                    <div className="shrink-0 text-center">
-                      <span className={`font-mono-tabular text-xl sm:text-2xl font-black block leading-none ${
-                        ans.isWinner ? 'text-amber-400' : arrivalRank === 1 ? 'text-amber-400' : 'text-zinc-400'
+                    {/* Rank Badge */}
+                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#090c14] border border-[#28334e]">
+                      <span className={`font-mono-tabular font-black text-sm ${
+                        isHeroSpot ? 'text-[#ccff00]' : 'text-slate-400'
                       }`}>
                         #{formattedRank}
                       </span>
-                      <span className="text-[9px] font-bold tracking-widest text-zinc-500 uppercase block mt-0.5">
-                        ORDER
-                      </span>
-                    </div>
-
-                    {/* Divider Hairline */}
-                    <div className="w-[1px] h-8 bg-[#282d3d] shrink-0 hidden sm:block" />
-
-                    {/* Player Details & Answer Body */}
-                    <div className="min-w-0 flex-1 space-y-1">
-                      
-                      {/* Name + Username + Status Tag */}
-                      <div className="flex items-center gap-2 flex-wrap text-xs">
-                        <span className="font-bold text-zinc-100 text-sm">
-                          {ans.playerName}
+                      {arrivalRank === 1 && (
+                        <span className="text-[8px] font-black uppercase text-[#ccff00] bg-[#ccff00]/15 px-1 py-0.5 rounded border border-[#ccff00]/30">
+                          1ST IN
                         </span>
-                        {ans.username && (
-                          <span className="font-mono-tabular text-[11px] text-zinc-400 font-medium">
-                            @{ans.username}
-                          </span>
-                        )}
-                        {ans.isWinner && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500 text-zinc-950">
-                            WINNER (+{ans.pointsAwarded})
-                          </span>
-                        )}
-                        {ans.status === 'CORRECT' && !ans.isWinner && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                            CORRECT (+{ans.pointsAwarded})
-                          </span>
-                        )}
-                        {ans.status === 'WRONG' && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">
-                            REJECTED
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Submitted Answer Text */}
-                      <div className="font-mono-tabular text-sm sm:text-base font-semibold text-zinc-100 break-words">
-                        "{ans.answerText}"
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Middle: Reaction Speed & Precise Timestamp */}
-                  <div className="flex items-center gap-3 text-xs shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#232838]">
-                    <div className="text-left md:text-right">
-                      <div className="flex items-center justify-start md:justify-end gap-1.5">
-                        <span className="font-mono-tabular text-xs font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20" title="Buzzer Reaction Speed (Time since round started)">
-                          {formatElapsedRoundTime(ans.rawSystemMs, currentRound?.startTime)}
-                        </span>
-                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">
-                          SPEED
-                        </span>
-                      </div>
-                      {isEditing ? (
-                        <div className="inline-flex items-center gap-1 mt-1">
-                          <input
-                            type="text"
-                            value={editTimestampValue}
-                            onChange={(e) => setEditTimestampValue(e.target.value)}
-                            onKeyDown={(e) => handleKeyDownEdit(e, ans.id)}
-                            className="ctrl-input font-mono-tabular text-xs py-0.5 px-2 w-28 text-center"
-                            placeholder="HH:mm:ss.SSS"
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => handleSaveEdit(ans.id)}
-                            className="p-1 rounded bg-emerald-600 text-white hover:bg-emerald-500"
-                            title="Save timestamp"
-                          >
-                            <Check className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => handleStartEdit(ans)}
-                          className="font-mono-tabular text-[11px] text-zinc-400 hover:text-amber-400 inline-flex items-center gap-1 mt-0.5 p-0.5 rounded hover:bg-[#1f2433]"
-                          title="Wall-clock arrival time. Click to edit."
-                        >
-                          <span>{ans.officialTimestamp}</span>
-                          <Edit2 className="w-2.5 h-2.5 opacity-40" />
-                        </button>
                       )}
                     </div>
+
+                    {/* Player Name & Username */}
+                    <span className="font-display font-black text-white text-sm sm:text-base">
+                      {ans.playerName}
+                    </span>
+                    {ans.username && (
+                      <span className="font-mono text-xs text-slate-400">
+                        @{ans.username}
+                      </span>
+                    )}
+
+                    {/* Status Badges */}
+                    {ans.isWinner && (
+                      <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-[#ccff00] text-black shadow-sm font-mono">
+                        WINNER (+{ans.pointsAwarded})
+                      </span>
+                    )}
+                    {ans.status === 'CORRECT' && !ans.isWinner && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono">
+                        CORRECT (+{ans.pointsAwarded})
+                      </span>
+                    )}
+                    {ans.status === 'WRONG' && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono">
+                        REJECTED
+                      </span>
+                    )}
                   </div>
 
-                  {/* Right: Operational Grading Action Buttons */}
-                  <div className="flex items-center gap-1.5 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#232838] flex-wrap justify-end">
+                  {/* Right: Buzzer Speed & Editable Wall Clock Timestamp */}
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono-tabular text-xs font-black text-[#ccff00] bg-[#ccff00]/10 px-2 py-0.5 rounded border border-[#ccff00]/25 flex items-center gap-1">
+                      <span>{formatElapsedRoundTime(ans.rawSystemMs, currentRound?.startTime)}</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase ml-0.5">SPEED</span>
+                    </span>
+
+                    {isEditing ? (
+                      <div className="inline-flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={editTimestampValue}
+                          onChange={(e) => setEditTimestampValue(e.target.value)}
+                          onKeyDown={(e) => handleKeyDownEdit(e, ans.id)}
+                          className="tactics-input font-mono-tabular text-xs py-0.5 px-1.5 w-24 text-center"
+                          placeholder="HH:mm:ss.SSS"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => handleSaveEdit(ans.id)}
+                          className="p-1 rounded bg-[#ccff00] text-black font-bold"
+                          title="Save timestamp"
+                        >
+                          <Check className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleStartEdit(ans)}
+                        className="font-mono-tabular text-[11px] text-slate-400 hover:text-white inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#090c14] border border-[#28334e]"
+                        title="Click to edit timestamp"
+                      >
+                        <span>{ans.officialTimestamp}</span>
+                        <Edit2 className="w-2.5 h-2.5 opacity-40" />
+                      </button>
+                    )}
+                  </div>
+
+                </div>
+
+                {/* ── ROW 2: ANSWER TEXT + GRADING CONTROLS ── */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#1c2438]">
+                  
+                  {/* Big Beautiful Answer Text (100% Horizontal Space) */}
+                  <div className="min-w-0 flex-1">
+                    <span className="font-mono-tabular text-base sm:text-lg font-black text-white block break-words">
+                      "{ans.answerText}"
+                    </span>
+                  </div>
+
+                  {/* Operational Action Buttons */}
+                  <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
                     
-                    {/* Winner (+1 Pt) */}
+                    {/* Winner Button */}
                     <button
                       onClick={() => onEvaluateAnswer(ans.id, 'CORRECT', 1, true)}
-                      className={`ctrl-btn text-xs py-1 px-2.5 ${
+                      className={`tactics-btn text-xs py-1.5 px-3 rounded-lg ${
                         ans.isWinner 
-                          ? 'bg-amber-500 text-zinc-950 font-bold' 
-                          : 'bg-[#1e2330] hover:bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          ? 'bg-[#ccff00] text-black font-black border-[#ccff00] shadow-[0_0_16px_rgba(204,255,0,0.4)]' 
+                          : 'tactics-btn-secondary hover:border-[#ccff00]/50 hover:text-[#ccff00]'
                       }`}
                       title="Declare Round Winner (+1 Point)"
                     >
-                      WINNER (+1)
+                      <span>WINNER (+1)</span>
                     </button>
 
-                    {/* Correct (+1 Pt) */}
+                    {/* Correct Button */}
                     <button
                       onClick={() => onEvaluateAnswer(ans.id, 'CORRECT', 1, false)}
-                      className={`ctrl-btn text-xs py-1 px-2.5 ${
+                      className={`tactics-btn text-xs py-1.5 px-2.5 rounded-lg ${
                         ans.status === 'CORRECT' && !ans.isWinner
-                          ? 'bg-emerald-600 text-white font-bold'
-                          : 'bg-[#1e2330] hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          ? 'bg-emerald-600 text-white font-bold border-emerald-500'
+                          : 'tactics-btn-secondary'
                       }`}
                       title="Mark Correct (+1 Point)"
                     >
-                      CORRECT
+                      <Check className="w-3.5 h-3.5" />
+                      <span>CORRECT</span>
                     </button>
 
-                    {/* Reject (0 Pt) */}
+                    {/* Reject Button */}
                     <button
                       onClick={() => onEvaluateAnswer(ans.id, 'WRONG', 0, false)}
-                      className={`ctrl-btn text-xs py-1 px-2.5 ${
+                      className={`tactics-btn text-xs py-1.5 px-2.5 rounded-lg ${
                         ans.status === 'WRONG'
-                          ? 'bg-rose-600 text-white font-bold'
-                          : 'bg-[#1e2330] hover:bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                          ? 'bg-rose-950 text-rose-300 border-rose-800'
+                          : 'tactics-btn-secondary opacity-70 hover:opacity-100 hover:text-rose-400'
                       }`}
-                      title="Reject Submission (0 Points)"
+                      title="Reject Submission"
                     >
-                      REJECT
+                      <X className="w-3.5 h-3.5" />
+                      <span>REJECT</span>
                     </button>
 
-                    {/* Custom Point Adjustment */}
+                    {/* Custom Points */}
                     {isCustomPointsOpen ? (
-                      <div className="inline-flex items-center gap-1 bg-[#10121a] p-1 rounded border border-[#2e354a]">
+                      <div className="inline-flex items-center gap-1 bg-[#090c14] p-1 rounded-lg border border-[#28334e]">
                         <input
                           type="number"
                           min={0}
                           max={100}
                           value={customPointsVal}
                           onChange={(e) => setCustomPointsVal(Number(e.target.value))}
-                          className="w-10 text-center text-xs py-0.5 rounded bg-[#181a24] text-zinc-200 font-mono font-bold"
+                          className="w-10 text-center text-xs py-0.5 rounded bg-[#151a28] text-white font-mono"
                         />
                         <button
                           onClick={() => {
                             onEvaluateAnswer(ans.id, 'CORRECT', customPointsVal, false);
                             setCustomPointId(null);
                           }}
-                          className="px-1.5 py-0.5 bg-zinc-200 text-zinc-950 text-[10px] font-bold rounded"
+                          className="px-2 py-0.5 bg-[#ccff00] text-black text-[10px] font-black rounded"
                         >
                           SET
                         </button>
@@ -373,7 +374,7 @@ export const AnswerQueue: React.FC<AnswerQueueProps> = ({
                           setCustomPointId(ans.id);
                           setCustomPointsVal(ans.pointsAwarded || 2);
                         }}
-                        className="ctrl-btn ctrl-btn-ghost text-[11px] py-1 px-2 font-mono"
+                        className="tactics-btn tactics-btn-secondary text-[10px] py-1.5 px-2 font-mono text-slate-400 hover:text-white"
                         title="Award custom points"
                       >
                         +PTS
@@ -383,6 +384,7 @@ export const AnswerQueue: React.FC<AnswerQueueProps> = ({
                   </div>
 
                 </div>
+
               </div>
             );
           })}

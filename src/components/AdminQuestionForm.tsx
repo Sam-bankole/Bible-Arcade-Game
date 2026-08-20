@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { GameType, GameRound } from '../types/game';
 import { BIBLE_GAMES } from '../data/games';
 import { PresetQuestionModal } from './PresetQuestionModal';
-import { Play, BookOpen } from 'lucide-react';
+import { Play, BookOpen, Target } from 'lucide-react';
 
 interface AdminQuestionFormProps {
   gameType: GameType;
@@ -121,18 +121,18 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
   };
 
   return (
-    <div className="ctrl-card p-4 sm:p-5 space-y-4">
+    <div className="tactics-card p-4 sm:p-5 space-y-4">
       
-      {/* Header: Mode Name & Preset Loader */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#232838]">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">
-              {currentGameInfo.title}
-            </span>
-            <span className="text-xs text-zinc-500">•</span>
-            <span className="text-xs text-zinc-400 font-medium">
-              Round Setup
+      {/* Header: Format Name & Preset Loader */}
+      <div className="flex items-center justify-between pb-3 border-b border-[#1c2130]">
+        <div className="flex items-center gap-2">
+          <Target className="w-4 h-4 text-[#ccff00]" />
+          <div>
+            <h3 className="font-display text-sm font-black uppercase tracking-wider text-white">
+              {currentGameInfo.title} Setup
+            </h3>
+            <span className="text-[10px] text-slate-400 font-semibold uppercase">
+              Configure Target & Timer
             </span>
           </div>
         </div>
@@ -140,9 +140,9 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
         <button
           type="button"
           onClick={() => setIsPresetModalOpen(true)}
-          className="ctrl-btn ctrl-btn-secondary text-xs py-1 px-2.5 flex items-center gap-1.5"
+          className="tactics-btn tactics-btn-secondary text-xs py-1 px-3 rounded-lg flex items-center gap-1.5"
         >
-          <BookOpen className="w-3.5 h-3.5 opacity-70" />
+          <BookOpen className="w-3.5 h-3.5 text-[#ccff00]" />
           <span>Presets</span>
         </button>
       </div>
@@ -155,7 +155,7 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
         {gameType === 'LETTER_RUSH' && (
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-1.5">
                 Target Bible Letter
               </label>
               <div className="flex items-center gap-3">
@@ -164,11 +164,11 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
                   maxLength={1}
                   value={letter}
                   onChange={(e) => setLetter(e.target.value.toUpperCase())}
-                  className="font-mono-tabular text-3xl font-black text-center text-amber-400 w-20 py-2 rounded-lg bg-[#0e1017] border border-[#2e354a] focus:border-amber-500 uppercase outline-none"
+                  className="font-mono-tabular text-3xl font-black text-center text-[#ccff00] w-20 py-2.5 rounded-xl bg-[#0c0e15] border-2 border-[#272d42] focus:border-[#ccff00] shadow-inner uppercase outline-none"
                   required
                 />
-                <div className="text-xs text-zinc-400 leading-relaxed">
-                  Contestants race to name characters, books, or places starting with <strong className="text-amber-400 font-mono font-bold">"{letter || 'A'}"</strong>. Fastest arrival gets reviewed first.
+                <div className="text-xs text-slate-300 leading-relaxed bg-[#0c0e15] p-3 rounded-xl border border-[#1c2130] flex-1">
+                  Contestants race to name characters, books, or places starting with <strong className="text-[#ccff00] font-mono text-sm">"{letter || 'A'}"</strong>.
                 </div>
               </div>
             </div>
@@ -179,45 +179,45 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
         {gameType === 'SCRIPTURE_OR_SPAM' && (
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-1.5">
                 Quote to Display
               </label>
               <textarea
                 value={quote}
                 onChange={(e) => setQuote(e.target.value)}
                 rows={3}
-                className="ctrl-input text-xs"
+                className="tactics-input text-xs"
                 placeholder='Enter quote e.g., "I can do all things through Christ..."'
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-1.5">
                 Correct Classification
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setIsScripture(true)}
-                  className={`py-2 text-xs font-bold rounded-lg border transition-colors ${
+                  className={`py-2 text-xs font-black rounded-lg border transition-all ${
                     isScripture 
-                      ? 'bg-zinc-200 text-zinc-900 border-zinc-200' 
-                      : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
+                      ? 'bg-[#ccff00] text-black border-[#ccff00] shadow-[0_0_12px_rgba(204,255,0,0.2)]' 
+                      : 'bg-[#0c0e15] text-slate-400 border-[#1c2130]'
                   }`}
                 >
-                  Scripture
+                  SCRIPTURE
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsScripture(false)}
-                  className={`py-2 text-xs font-bold rounded-lg border transition-colors ${
+                  className={`py-2 text-xs font-black rounded-lg border transition-all ${
                     !isScripture 
-                      ? 'bg-zinc-200 text-zinc-900 border-zinc-200' 
-                      : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
+                      ? 'bg-rose-500 text-white border-rose-500 shadow-md' 
+                      : 'bg-[#0c0e15] text-slate-400 border-[#1c2130]'
                   }`}
                 >
-                  Spam Quote
+                  SPAM QUOTE
                 </button>
               </div>
             </div>
@@ -228,45 +228,45 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
         {gameType === 'OT_OR_NT' && (
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                Bible Reference / Character / Event
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-1.5">
+                Bible Reference / Character
               </label>
               <input
                 type="text"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
                 placeholder="e.g. David and Goliath, Pentecost"
-                className="ctrl-input text-xs"
+                className="tactics-input text-xs"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-1.5">
                 Official Testament
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setTestament('OT')}
-                  className={`py-2 text-xs font-bold rounded-lg border transition-colors ${
+                  className={`py-2 text-xs font-black rounded-lg border transition-all ${
                     testament === 'OT' 
-                      ? 'bg-zinc-200 text-zinc-900 border-zinc-200' 
-                      : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
+                      ? 'bg-[#ccff00] text-black border-[#ccff00] shadow-[0_0_12px_rgba(204,255,0,0.2)]' 
+                      : 'bg-[#0c0e15] text-slate-400 border-[#1c2130]'
                   }`}
                 >
-                  Old Testament
+                  OLD TESTAMENT
                 </button>
                 <button
                   type="button"
                   onClick={() => setTestament('NT')}
-                  className={`py-2 text-xs font-bold rounded-lg border transition-colors ${
+                  className={`py-2 text-xs font-black rounded-lg border transition-all ${
                     testament === 'NT' 
-                      ? 'bg-zinc-200 text-zinc-900 border-zinc-200' 
-                      : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
+                      ? 'bg-[#ccff00] text-black border-[#ccff00] shadow-[0_0_12px_rgba(204,255,0,0.2)]' 
+                      : 'bg-[#0c0e15] text-slate-400 border-[#1c2130]'
                   }`}
                 >
-                  New Testament
+                  NEW TESTAMENT
                 </button>
               </div>
             </div>
@@ -277,7 +277,7 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
         {gameType === 'WHO_AM_I' && (
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-1.5">
                 Character Clues
               </label>
               <textarea
@@ -285,13 +285,13 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
                 placeholder="I was a shepherd boy who defeated a giant..."
-                className="ctrl-input text-xs"
+                className="tactics-input text-xs"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-1.5">
                 Correct Character Name
               </label>
               <input
@@ -299,7 +299,7 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
                 placeholder="e.g. David"
-                className="ctrl-input text-xs"
+                className="tactics-input text-xs"
                 required
               />
             </div>
@@ -310,21 +310,21 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
         {gameType === 'BIBLE_COUPLES' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                Given Name (Prompt)
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-1.5">
+                Given Name
               </label>
               <input
                 type="text"
                 value={givenName}
                 onChange={(e) => setGivenName(e.target.value)}
                 placeholder="e.g. Adam"
-                className="ctrl-input text-xs"
+                className="tactics-input text-xs"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-300 mb-1.5">
                 Correct Partner
               </label>
               <input
@@ -332,7 +332,7 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
                 value={partnerName}
                 onChange={(e) => setPartnerName(e.target.value)}
                 placeholder="e.g. Eve"
-                className="ctrl-input text-xs"
+                className="tactics-input text-xs"
                 required
               />
             </div>
@@ -340,9 +340,9 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
         )}
 
         {/* TIMER DURATION SELECTOR */}
-        <div className="pt-3 border-t border-[#232838] space-y-2">
-          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">
-            Round Timer
+        <div className="pt-2 border-t border-[#1c2130] space-y-2">
+          <label className="block text-xs font-black uppercase tracking-wider text-slate-300">
+            Round Timer Duration
           </label>
           <div className="flex flex-wrap gap-1.5">
             {[0, 10, 15, 20, 30, 60].map((seconds) => (
@@ -350,10 +350,10 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
                 key={seconds}
                 type="button"
                 onClick={() => setTimerSeconds(seconds)}
-                className={`px-3 py-1.5 rounded text-xs font-semibold font-mono-tabular border transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-black font-mono-tabular border transition-all ${
                   timerSeconds === seconds
-                    ? 'bg-zinc-200 text-zinc-950 font-bold border-zinc-200'
-                    : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
+                    ? 'bg-[#ccff00] text-black border-[#ccff00] shadow-[0_0_10px_rgba(204,255,0,0.25)]'
+                    : 'bg-[#0c0e15] text-slate-400 border-[#1c2130] hover:text-white'
                 }`}
               >
                 {seconds === 0 ? 'Off' : `${seconds}s`}
@@ -366,10 +366,10 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
         <div className="pt-2">
           <button
             type="submit"
-            className="ctrl-btn ctrl-btn-primary w-full py-3 text-sm font-bold flex items-center justify-center gap-2"
+            className="tactics-btn tactics-btn-primary w-full py-3 text-sm font-black flex items-center justify-center gap-2 rounded-xl shadow-lg hover:shadow-[0_0_24px_rgba(204,255,0,0.4)]"
           >
-            <Play className="w-4 h-4 fill-zinc-950" />
-            <span>Start Round</span>
+            <Play className="w-4 h-4 fill-black" />
+            <span>START LIVE ROUND</span>
           </button>
         </div>
 

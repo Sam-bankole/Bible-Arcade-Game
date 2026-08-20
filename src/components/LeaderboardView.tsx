@@ -22,21 +22,21 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   );
 
   return (
-    <div className="ctrl-card p-4 sm:p-5 space-y-4">
+    <div className="tactics-card p-4 sm:p-5 space-y-4">
       
       {/* Header Strip */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#232838]">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#1c2130]">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-100">
+            <h3 className="font-display text-sm font-black uppercase tracking-wider text-white">
               Tournament Standings
             </h3>
-            <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded bg-[#1c202d] text-zinc-300 border border-[#2e354a]">
-              {sortedPlayers.length} {sortedPlayers.length === 1 ? 'player' : 'players'}
+            <span className="font-mono-tabular text-xs font-black px-2.5 py-0.5 rounded-full bg-[#171b26] text-[#ccff00] border border-[#272d42]">
+              {sortedPlayers.length} {sortedPlayers.length === 1 ? 'Contestant' : 'Contestants'}
             </span>
           </div>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Cumulative scores across all rounds in this session
+          <p className="text-xs text-slate-400 mt-0.5">
+            Cumulative leaderboard scores across all tournament rounds
           </p>
         </div>
 
@@ -46,13 +46,13 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search contestant..."
-            className="ctrl-input py-1 text-xs pl-3 pr-7 w-full"
+            placeholder="Search contestant name..."
+            className="tactics-input py-1 text-xs pl-3 pr-7 w-full bg-[#0c0e15]"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -62,12 +62,12 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
 
       {/* Standings List */}
       {sortedPlayers.length === 0 ? (
-        <div className="text-center py-12 text-zinc-500 bg-[#10121a] rounded-lg border border-dashed border-[#232838]">
-          <p className="text-sm font-medium text-zinc-300">No contestants registered</p>
-          <p className="text-xs text-zinc-500 mt-1">Players will be listed here as they join using the session code.</p>
+        <div className="text-center py-12 text-slate-500 bg-[#0c0e15] rounded-xl border border-dashed border-[#1c2130]">
+          <p className="text-sm font-bold text-slate-300">No contestants registered yet</p>
+          <p className="text-xs text-slate-500 mt-1">Players joining via the Room Code will appear on this board.</p>
         </div>
       ) : filteredPlayers.length === 0 ? (
-        <div className="text-center py-8 text-zinc-500 bg-[#10121a] rounded-lg">
+        <div className="text-center py-8 text-slate-500 bg-[#0c0e15] rounded-xl">
           <p className="text-xs">No contestant matching "{searchTerm}"</p>
         </div>
       ) : (
@@ -80,76 +80,76 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
             return (
               <div
                 key={player.id}
-                className={`p-2.5 sm:p-3 rounded-lg border transition-colors flex items-center justify-between gap-3 ${
+                className={`p-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
                   isLeader
-                    ? 'bg-[#18160f] border-amber-500/40 border-l-4 border-l-amber-500'
-                    : 'bg-[#10121a] border-[#232838] hover:border-[#2f364a]'
+                    ? 'bg-[#171b26] border-[#ccff00]/50 border-l-4 border-l-[#ccff00] shadow-[0_0_16px_rgba(204,255,0,0.1)]'
+                    : 'bg-[#141824] border-[#272d42]'
                 }`}
               >
-                {/* Left: Rank & Player info */}
-                <div className="flex items-center gap-3 min-w-0 flex-1">
+                {/* Left: Rank & Contestant Info */}
+                <div className="flex items-center gap-3.5 min-w-0 flex-1">
                   
                   {/* Rank Number */}
-                  <div className="w-7 text-center shrink-0">
-                    <span className={`font-mono-tabular text-sm sm:text-base font-bold ${
-                      isLeader ? 'text-amber-400 font-black' : 'text-zinc-500'
+                  <div className="w-8 text-center shrink-0">
+                    <span className={`font-mono-tabular text-base sm:text-lg font-black ${
+                      isLeader ? 'text-[#ccff00]' : 'text-slate-500'
                     }`}>
                       #{formattedRank}
                     </span>
                   </div>
 
-                  {/* Player Name + Username */}
+                  {/* Contestant Name + Username */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-zinc-100 text-sm truncate">
+                      <span className="font-black text-white text-sm sm:text-base truncate">
                         {player.name}
                       </span>
                       {player.username && (
-                        <span className="font-mono-tabular text-xs text-zinc-400 font-medium">
+                        <span className="font-mono text-xs text-slate-400 font-medium">
                           @{player.username}
                         </span>
                       )}
                       {isLeader && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-500 text-zinc-950">
-                          Leader
+                        <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-[#ccff00] text-black shadow-sm font-mono">
+                          LEADER
                         </span>
                       )}
                     </div>
-                    <span className="font-mono-tabular text-[10px] text-zinc-600 block">
-                      ID: {player.id.slice(-6).toUpperCase()}
+                    <span className="font-mono text-[10px] text-slate-500 block">
+                      PLAYER ID: {player.id.slice(-6).toUpperCase()}
                     </span>
                   </div>
                 </div>
 
-                {/* Right: Score + Manual score overrides */}
+                {/* Right: Score + Manual Modifiers */}
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
-                    <span className={`font-mono-tabular text-lg sm:text-xl font-bold block leading-none ${
-                      isLeader ? 'text-amber-400 font-black' : 'text-zinc-100'
+                    <span className={`font-mono-tabular text-xl sm:text-2xl font-black block leading-none ${
+                      isLeader ? 'text-[#ccff00]' : 'text-white'
                     }`}>
                       {player.score}
                     </span>
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block mt-0.5">
-                      PTS
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mt-0.5">
+                      POINTS
                     </span>
                   </div>
 
-                  {/* Admin score correction */}
+                  {/* Admin Manual Score Correction */}
                   {isAdmin && onUpdateScore && (
-                    <div className="flex items-center gap-1 border-l border-[#232838] pl-2.5">
+                    <div className="flex items-center gap-1 border-l border-[#272d42] pl-2.5">
                       <button
                         onClick={() => onUpdateScore(player.id, player.score + 1)}
-                        className="ctrl-btn ctrl-btn-secondary text-xs p-1 h-6 w-6 flex items-center justify-center text-zinc-300 hover:text-emerald-400"
+                        className="w-7 h-7 rounded-lg bg-[#171b26] hover:bg-[#1e2332] border border-[#272d42] flex items-center justify-center text-slate-300 hover:text-[#ccff00] transition-colors"
                         title="Add +1 point"
                       >
-                        <Plus className="w-3 h-3" />
+                        <Plus className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => onUpdateScore(player.id, Math.max(0, player.score - 1))}
-                        className="ctrl-btn ctrl-btn-secondary text-xs p-1 h-6 w-6 flex items-center justify-center text-zinc-300 hover:text-rose-400"
+                        className="w-7 h-7 rounded-lg bg-[#171b26] hover:bg-[#1e2332] border border-[#272d42] flex items-center justify-center text-slate-400 hover:text-rose-400 transition-colors"
                         title="Deduct -1 point"
                       >
-                        <Minus className="w-3 h-3" />
+                        <Minus className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}

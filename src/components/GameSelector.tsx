@@ -1,7 +1,7 @@
 import React from 'react';
 import type { GameType } from '../types/game';
 import { BIBLE_GAMES } from '../data/games';
-import { Play } from 'lucide-react';
+import { Play, Check } from 'lucide-react';
 
 interface GameSelectorProps {
   selectedGame: GameType;
@@ -17,16 +17,16 @@ export const GameSelector: React.FC<GameSelectorProps> = ({
   isAdmin = false
 }) => {
   return (
-    <div className="py-4 space-y-4">
+    <div className="py-2 space-y-4">
       
       {/* Header */}
-      <div className="pb-2 border-b border-[#232838] flex items-center justify-between">
+      <div className="pb-3 border-b border-[#1c2130] flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-100">
-            Game Mode Selection
+          <h2 className="font-display text-sm font-black uppercase tracking-wider text-white">
+            Available Competition Formats
           </h2>
-          <p className="text-xs text-zinc-400 mt-0.5">
-            Switch between 5 supported live competition formats
+          <p className="text-xs text-slate-400 mt-0.5">
+            Switch between 5 supported live tournament formats
           </p>
         </div>
       </div>
@@ -40,58 +40,56 @@ export const GameSelector: React.FC<GameSelectorProps> = ({
             <div
               key={game.id}
               onClick={() => onSelectGame(game.id)}
-              className={`cursor-pointer rounded-lg p-4 transition-colors flex flex-col justify-between border ${
+              className={`cursor-pointer rounded-xl p-4 transition-all flex flex-col justify-between border ${
                 isSelected
-                  ? 'bg-[#18160f] border-amber-500/50 border-l-4 border-l-amber-500'
-                  : 'bg-[#10121a] border-[#232838] hover:border-[#2e354a]'
+                  ? 'bg-[#171b26] border-[#ccff00]/50 border-l-4 border-l-[#ccff00] shadow-[0_0_20px_rgba(204,255,0,0.12)]'
+                  : 'bg-[#11141d] border-[#1c2130] hover:border-[#272d42] hover:bg-[#141824]'
               }`}
             >
               <div>
-                {/* Header */}
+                {/* Header Tag */}
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-mono-tabular text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                  <span className="font-mono-tabular text-[10px] font-black text-slate-400 uppercase tracking-wider">
                     FORMAT #{game.number}
                   </span>
 
                   {isSelected && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-500 text-zinc-950">
-                      Active
+                    <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-[#ccff00] text-black shadow-sm flex items-center gap-1 font-mono">
+                      <Check className="w-3 h-3" />
+                      ACTIVE
                     </span>
                   )}
                 </div>
 
                 {/* Title */}
-                <div className="flex items-start gap-2.5 mb-2">
-                  <span className="text-xl shrink-0">{game.icon}</span>
-                  <div>
-                    <h3 className="text-sm font-bold text-zinc-100">
-                      {game.title}
-                    </h3>
-                    <p className="text-xs text-zinc-400 font-medium">
-                      {game.subtitle}
-                    </p>
-                  </div>
+                <div className="mb-2">
+                  <h3 className="font-display font-black text-base text-white">
+                    {game.title}
+                  </h3>
+                  <p className="text-xs text-[#ccff00] font-semibold">
+                    {game.subtitle}
+                  </p>
                 </div>
 
                 {/* Description */}
-                <p className="text-xs text-zinc-400 leading-relaxed mb-3">
+                <p className="text-xs text-slate-400 leading-relaxed mb-3">
                   {game.description}
                 </p>
               </div>
 
               {/* Select Button */}
-              <div className="pt-2 border-t border-[#232838] flex items-center justify-between">
-                <span className="text-[10px] font-mono text-zinc-500">
-                  {isAdmin ? 'Ready for next round' : 'Selected mode'}
+              <div className="pt-3 border-t border-[#1c2130] flex items-center justify-between">
+                <span className="text-[10px] font-mono text-slate-500">
+                  {isAdmin ? 'Ready for next round' : 'Selected format'}
                 </span>
 
                 <button
                   type="button"
-                  className={`ctrl-btn text-xs py-1 px-3 ${
-                    isSelected ? 'ctrl-btn-primary' : 'ctrl-btn-secondary'
+                  className={`tactics-btn text-xs py-1 px-3 rounded-lg ${
+                    isSelected ? 'tactics-btn-primary' : 'tactics-btn-secondary'
                   }`}
                 >
-                  {isSelected ? 'Selected' : 'Choose'}
+                  {isSelected ? 'SELECTED' : 'SELECT'}
                 </button>
               </div>
             </div>
@@ -101,13 +99,13 @@ export const GameSelector: React.FC<GameSelectorProps> = ({
 
       {/* Launch Action */}
       {isAdmin && onLaunchGame && (
-        <div className="text-center pt-2">
+        <div className="text-center pt-3">
           <button
             onClick={onLaunchGame}
-            className="ctrl-btn ctrl-btn-primary px-6 py-2.5 text-xs font-bold inline-flex items-center gap-2"
+            className="tactics-btn tactics-btn-primary px-6 py-2.5 text-xs font-black inline-flex items-center gap-2 rounded-xl shadow-lg hover:shadow-[0_0_24px_rgba(204,255,0,0.35)]"
           >
-            <Play className="w-3.5 h-3.5 fill-zinc-950" />
-            <span>Configure & Start Round</span>
+            <Play className="w-4 h-4 fill-black" />
+            <span>CONFIGURE & START ROUND</span>
           </button>
         </div>
       )}

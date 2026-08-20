@@ -1,41 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @layer base {
   :root {
-    /* Stage Control Room Charcoal Palette */
-    --bg-app: #0e1015;
-    --bg-surface: #14171f;
-    --bg-surface-raised: #1a1e29;
-    --bg-surface-hover: #222736;
-    --bg-input: #10121a;
+    /* CSTACTICS Dark Gunmetal & Graphite Canvas */
+    --bg-canvas: #06080e;
+    --bg-surface: #0e121d;
+    --bg-surface-raised: #151a28;
+    --bg-surface-hover: #1c2335;
+    --bg-input: #090c14;
 
-    --border-subtle: #232838;
-    --border-muted: #2e354a;
-    --border-strong: #3f4863;
+    /* Hairline Esports Borders */
+    --border-subtle: #1c2438;
+    --border-muted: #28334e;
+    --border-strong: #3e4e76;
 
-    /* Single Game Accent: Urgent Signal Amber */
-    --signal-amber: #f59e0b;
-    --signal-amber-hover: #fbbf24;
-    --signal-amber-muted: rgba(245, 158, 11, 0.12);
-    --signal-amber-border: rgba(245, 158, 11, 0.35);
+    /* CSTACTICS Hero Accent: Electric Lime / Cyber Volt */
+    --neon-lime: #ccff00;
+    --neon-lime-hover: #b8e600;
+    --neon-lime-text: #060902;
+    --neon-lime-muted: rgba(204, 255, 0, 0.15);
+    --neon-lime-border: rgba(204, 255, 0, 0.4);
 
-    /* Operational Status Indicators */
-    --status-live: #22c55e;
-    --status-live-bg: rgba(34, 197, 94, 0.12);
-    --status-closed: #ef4444;
-    --status-closed-bg: rgba(239, 68, 68, 0.12);
-    --status-review: #a855f7;
-    --status-review-bg: rgba(168, 85, 247, 0.12);
+    /* Telemetry Accents */
+    --neon-violet: #8b5cf6;
+    --neon-cyan: #06b6d4;
+    --neon-rose: #f43f5e;
+    --neon-gold: #f59e0b;
 
-    --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
-    --text-inverse: #0b0d13;
+    /* Text System */
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
 
-    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: 'Outfit', 'Plus Jakarta Sans', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-    --font-display: 'Space Grotesk', sans-serif;
+    --font-display: 'Chakra Petch', 'Outfit', sans-serif;
   }
 
   * {
@@ -47,7 +47,38 @@
   html, body {
     width: 100%;
     min-height: 100vh;
-    background-color: var(--bg-app);
+    background-color: var(--bg-canvas);
+    /* High-Visibility Rich Multi-Layer Background */
+    background-image: 
+      /* Layer 1: Vivid Violet Aurora Spotlight Top-Left */
+      radial-gradient(circle 900px at 15% -5%, rgba(139, 92, 246, 0.35), transparent 70%),
+      /* Layer 2: Vivid Cyber Cyan Glow Bottom-Right */
+      radial-gradient(circle 850px at 88% 95%, rgba(6, 182, 212, 0.28), transparent 65%),
+      /* Layer 3: Center Electric Lime Ambient Bloom */
+      radial-gradient(circle 600px at 60% 40%, rgba(204, 255, 0, 0.09), transparent 60%),
+      /* Layer 4: Prominent Cyber Dot Matrix Mesh */
+      radial-gradient(rgba(204, 255, 0, 0.18) 1.5px, transparent 1.5px),
+      radial-gradient(rgba(148, 163, 184, 0.22) 1px, transparent 1px),
+      /* Layer 5: Distinct Digital Grid Lines */
+      linear-gradient(to right, rgba(139, 92, 246, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(6, 182, 212, 0.06) 1px, transparent 1px);
+    background-size: 
+      100% 100%, 
+      100% 100%, 
+      100% 100%, 
+      48px 48px, 
+      24px 24px, 
+      96px 96px, 
+      96px 96px;
+    background-position: 
+      0 0, 
+      0 0, 
+      0 0, 
+      0 0, 
+      12px 12px, 
+      0 0, 
+      0 0;
+    background-attachment: fixed;
     color: var(--text-primary);
     font-family: var(--font-sans);
     overflow-x: hidden;
@@ -55,23 +86,23 @@
   }
 }
 
-/* Operational Scrollbar */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg-app);
+  background: var(--bg-canvas);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border-muted);
-  border-radius: 3px;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-strong);
+  background: var(--neon-lime);
 }
 
-/* Monospaced Digits & Broadcast Counters */
+/* Typography Utilities */
 .font-mono-tabular {
   font-family: var(--font-mono);
   font-feature-settings: "tnum" 1, "zero" 1;
@@ -79,94 +110,136 @@
 
 .font-display {
   font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
-/* Control Room Card Surface */
-.ctrl-card {
-  background-color: var(--bg-surface);
+/* CSTACTICS Card Surface with Backdrop Blur and Crisp Edge */
+.tactics-card {
+  background-color: rgba(14, 18, 29, 0.88);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px -2px rgba(0, 0, 0, 0.5);
 }
 
-.ctrl-card-raised {
-  background-color: var(--bg-surface-raised);
+.tactics-card-raised {
+  background-color: rgba(21, 26, 40, 0.92);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--border-muted);
-  border-radius: 10px;
+  border-radius: 14px;
 }
 
-/* Operational Buttons */
-.ctrl-btn {
+/* Stat Box - Regular */
+.tactics-stat-box {
+  background-color: rgba(14, 18, 29, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: border-color 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+}
+.tactics-stat-box:hover {
+  border-color: var(--border-muted);
+  background-color: rgba(21, 26, 40, 0.95);
+}
+
+/* Stat Box - Active Hero Lime (Matching the 68% Endurance in the screenshot!) */
+.tactics-stat-box-hero {
+  background-color: var(--neon-lime);
+  color: var(--neon-lime-text);
+  border: 1px solid var(--neon-lime);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.tactics-stat-box-hero .stat-value {
+  color: #060902 !important;
+}
+.tactics-stat-box-hero .stat-label {
+  color: #1a2205 !important;
+}
+
+/* Esports Action Buttons */
+.tactics-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   font-family: var(--font-sans);
   font-size: 0.8125rem;
-  font-weight: 600;
-  padding: 8px 14px;
+  font-weight: 700;
+  padding: 7px 14px;
   border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: all 0.15s ease;
   white-space: nowrap;
 }
 
-.ctrl-btn:active {
+.tactics-btn:active {
   transform: translateY(1px);
 }
 
-.ctrl-btn-primary {
-  background-color: var(--signal-amber);
-  color: #0c0e14;
-  font-weight: 700;
-  border-color: var(--signal-amber);
+/* Hero Lime Primary Button (e.g. Buy + / Start Round) */
+.tactics-btn-primary {
+  background-color: var(--neon-lime);
+  color: #060902;
+  font-weight: 800;
+  border-color: var(--neon-lime);
 }
-.ctrl-btn-primary:hover {
-  background-color: var(--signal-amber-hover);
-  border-color: var(--signal-amber-hover);
+.tactics-btn-primary:hover {
+  background-color: var(--neon-lime-hover);
+  box-shadow: 0 0 20px rgba(204, 255, 0, 0.45);
 }
 
-.ctrl-btn-secondary {
-  background-color: var(--bg-surface-raised);
+/* Secondary Button */
+.tactics-btn-secondary {
+  background-color: rgba(21, 26, 40, 0.9);
   border-color: var(--border-muted);
   color: var(--text-primary);
 }
-.ctrl-btn-secondary:hover {
+.tactics-btn-secondary:hover {
   background-color: var(--bg-surface-hover);
   border-color: var(--border-strong);
 }
 
-.ctrl-btn-success {
-  background-color: #15803d;
-  color: #ffffff;
-  border-color: #16a34a;
-}
-.ctrl-btn-success:hover {
-  background-color: #16a34a;
-}
-
-.ctrl-btn-danger {
-  background-color: #b91c1c;
-  color: #ffffff;
-  border-color: #dc2626;
-}
-.ctrl-btn-danger:hover {
-  background-color: #dc2626;
+/* Tag Pills */
+.tactics-pill-lime {
+  background-color: rgba(204, 255, 0, 0.12);
+  color: #ccff00;
+  border: 1px solid rgba(204, 255, 0, 0.3);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.ctrl-btn-ghost {
-  background-color: transparent;
-  color: var(--text-secondary);
-  border-color: transparent;
-}
-.ctrl-btn-ghost:hover {
-  background-color: var(--bg-surface-raised);
-  color: var(--text-primary);
+.tactics-pill-violet {
+  background-color: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
 }
 
-/* Control Inputs */
-.ctrl-input {
+.tactics-pill-cyan {
+  background-color: rgba(6, 182, 212, 0.15);
+  color: #67e8f9;
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+/* Esports Input */
+.tactics-input {
   width: 100%;
   background-color: var(--bg-input);
   border: 1px solid var(--border-muted);
@@ -178,12 +251,12 @@
   outline: none;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
-.ctrl-input:focus {
-  border-color: var(--signal-amber);
+.tactics-input:focus {
+  border-color: var(--neon-lime);
   background-color: var(--bg-surface);
 }
 
-/* Container */
+/* Responsive Containers */
 .arcade-admin-container {
   max-width: 1560px;
   width: 100%;

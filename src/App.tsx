@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { GameSession, Player, GameType, GameRound } from './types/game';
 import { syncEngine, createNewSession } from './utils/syncEngine';
 import { Navbar } from './components/Navbar';
+import { StageBackground } from './components/StageBackground';
 import { LandingPage } from './components/LandingPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { PlayerView } from './components/PlayerView';
@@ -221,7 +222,10 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#08090f] text-slate-100 font-main relative">
+    <div className="min-h-screen bg-[#06080e] text-slate-100 font-main relative overflow-x-hidden">
+      
+      {/* High-Impact Cyber Stage Background */}
+      <StageBackground />
       
       {/* Top Navigation Bar */}
       {currentView !== 'PROJECTOR' && (
