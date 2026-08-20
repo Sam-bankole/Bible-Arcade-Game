@@ -22,10 +22,19 @@ export interface GameInfo {
   accentColor: string;
 }
 
+export interface UserIdentity {
+  uid: string;          // auto-generated UUID stored in localStorage
+  username: string;     // globally unique, lowercase
+  displayName: string;  // real name, hidden from other players
+  pinHash: string;      // SHA-256 hex of the 4-digit PIN
+  createdAt: number;
+}
+
 export interface Player {
   id: string;
-  name: string;
-  username?: string;
+  uid: string;          // links to UserIdentity.uid
+  name: string;         // display name (real name, private)
+  username: string;     // globally unique handle (public)
   sessionId: string;
   score: number;
   joinedAt: number;
