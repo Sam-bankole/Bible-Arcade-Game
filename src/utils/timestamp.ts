@@ -2,7 +2,7 @@
 
 /**
  * Formats a JavaScript timestamp or Date object into HH:mm:ss.SSS string
- * Example: 14:32:07.184
+ * Example: 09:54:14.584
  */
 export function formatTimestamp(dateInput?: Date | number): string {
   const d = dateInput === undefined 
@@ -17,6 +17,22 @@ export function formatTimestamp(dateInput?: Date | number): string {
   const ms = String(d.getMilliseconds()).padStart(3, '0');
 
   return `${hours}:${minutes}:${seconds}.${ms}`;
+}
+
+/**
+ * Calculates and formats elapsed stopwatch time since the round started
+ * Example: +4.58s or +12.34s
+ */
+export function formatElapsedRoundTime(submitMs: number, startMs?: number): string {
+  if (!startMs || submitMs < startMs) return '+0.00s';
+  const diffMs = submitMs - startMs;
+  const totalSeconds = (diffMs / 1000);
+  if (totalSeconds < 60) {
+    return `+${totalSeconds.toFixed(2)}s`;
+  }
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = (totalSeconds % 60).toFixed(2);
+  return `+${mins}m ${secs}s`;
 }
 
 /**

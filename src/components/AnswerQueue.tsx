@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { AnswerItem, GameRound } from '../types/game';
 import { Edit2, Check, X } from 'lucide-react';
+import { formatElapsedRoundTime } from '../utils/timestamp';
 
 interface AnswerQueueProps {
   currentRound: GameRound | null;
@@ -260,14 +261,19 @@ export const AnswerQueue: React.FC<AnswerQueueProps> = ({
                     </div>
                   </div>
 
-                  {/* Middle: Precise Timestamp Display */}
+                  {/* Middle: Reaction Speed & Precise Timestamp */}
                   <div className="flex items-center gap-3 text-xs shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-[#232838]">
                     <div className="text-left md:text-right">
-                      <span className="text-[10px] font-bold text-zinc-500 uppercase block tracking-wider">
-                        TIMESTAMP
-                      </span>
+                      <div className="flex items-center justify-start md:justify-end gap-1.5">
+                        <span className="font-mono-tabular text-xs font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20" title="Buzzer Reaction Speed (Time since round started)">
+                          {formatElapsedRoundTime(ans.rawSystemMs, currentRound?.startTime)}
+                        </span>
+                        <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">
+                          SPEED
+                        </span>
+                      </div>
                       {isEditing ? (
-                        <div className="inline-flex items-center gap-1 mt-0.5">
+                        <div className="inline-flex items-center gap-1 mt-1">
                           <input
                             type="text"
                             value={editTimestampValue}
@@ -288,11 +294,11 @@ export const AnswerQueue: React.FC<AnswerQueueProps> = ({
                       ) : (
                         <button
                           onClick={() => handleStartEdit(ans)}
-                          className="font-mono-tabular text-xs font-semibold text-zinc-300 hover:text-amber-400 inline-flex items-center gap-1 mt-0.5 p-1 rounded hover:bg-[#1f2433]"
-                          title="Click to edit arrival timestamp"
+                          className="font-mono-tabular text-[11px] text-zinc-400 hover:text-amber-400 inline-flex items-center gap-1 mt-0.5 p-0.5 rounded hover:bg-[#1f2433]"
+                          title="Wall-clock arrival time. Click to edit."
                         >
                           <span>{ans.officialTimestamp}</span>
-                          <Edit2 className="w-2.5 h-2.5 opacity-50" />
+                          <Edit2 className="w-2.5 h-2.5 opacity-40" />
                         </button>
                       )}
                     </div>
