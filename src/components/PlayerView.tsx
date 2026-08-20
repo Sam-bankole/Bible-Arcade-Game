@@ -1,14 +1,36 @@
 import React, { useState } from 'react';
 import type { GameSession, Player, AnswerItem } from '../types/game';
 import { BIBLE_GAMES } from '../data/games';
-import { Play, CheckCircle, Clock, Lock, Send } from 'lucide-react';
+import {
+  ArrowLeft,
+  Clock,
+  Send,
+  CheckCircle2,
+  Lock,
+  BookOpen,
+  Search,
+  Zap,
+  Heart,
+  Cross,
+  Trophy,
+  XCircle,
+  Sparkles
+} from 'lucide-react';
 
 interface PlayerViewProps {
-  session: GameSession;
+  session: GameSession | null;
   currentPlayer: Player | null;
-  onJoin: (code: string, name: string) => void;
+  onJoin: (code: string) => void;
   onSubmitAnswer: (answerText: string) => void;
 }
+
+const GAME_ICONS: Record<string, React.ElementType> = {
+  LETTER_RUSH:       Zap,
+  SCRIPTURE_OR_SPAM: BookOpen,
+  OT_OR_NT:          Cross,
+  WHO_AM_I:          Search,
+  BIBLE_COUPLES:     Heart,
+};
 
 export const PlayerView: React.FC<PlayerViewProps> = ({
   session,
@@ -16,86 +38,93 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
   onJoin,
   onSubmitAnswer
 }) => {
-  const [inputCode, setInputCode] = useState<string>(session.code || '');
-  const [displayName, setDisplayName] = useState<string>('');
-  const [answerText, setAnswerText] = useState<string>('');
+  const [inputCode, setInputCode] = useState(session?.code || '');
+  const [answerText, setAnswerText] = useState('');
 
-  // 1. JOIN SCREEN
-  if (!currentPlayer) {
-    const handleJoinSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!inputCode.trim() || !displayName.trim()) {
-        alert('Please enter a valid session code and display name.');
-        return;
-      }
-      onJoin(inputCode.trim().toUpperCase(), displayName.trim());
-    };
-
+  // ── 1. NO SESSION ──────────────────────────────────────────────────────
+  if (!session) {
     return (
-      <div className="min-h-[75vh] flex items-center justify-center p-2.5 sm:p-4 max-w-full">
-        <div className="arcade-card arcade-card-gold p-4 sm:p-8 max-w-md w-full relative">
-          
-          <div className="text-center mb-4 sm:mb-6">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-2xl sm:text-3xl mx-auto mb-2 sm:mb-3 shadow-lg shadow-amber-500/20">
-              📜
-            </div>
-            <h2 className="font-arcade text-lg sm:text-2xl font-black gold-gradient-text">
-              JOIN THE ARENA
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-sm bg-[#0e131f] border border-[#1d2538] rounded-2xl p-6 text-center space-y-4 shadow-xl">
+          <div className="w-12 h-12 rounded-xl bg-[#171e2e] border border-[#27324b] flex items-center justify-center text-slate-400 mx-auto">
+            <BookOpen className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="font-display text-lg font-bold text-white">
+              No Active Session
             </h2>
-            <p className="text-slate-400 text-[11px] sm:text-xs mt-1">
-              Enter session code and your name to join live competition.
+            <p className="text-xs text-slate-400">
+              You haven't joined a game room yet. Enter a code to join.
             </p>
           </div>
-
-          <form onSubmit={handleJoinSubmit} className="space-y-3 sm:space-y-4">
-            <div>
-              <label className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
-                GAME SESSION CODE
-              </label>
-              <input
-                type="text"
-                maxLength={6}
-                value={inputCode}
-                onChange={(e) => setInputCode(e.target.value.toUpperCase())}
-                placeholder="e.g. ABC123"
-                className="arcade-input font-arcade text-center text-xl sm:text-2xl font-black tracking-widest text-amber-300 uppercase py-2.5 sm:py-3"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
-                YOUR DISPLAY NAME
-              </label>
-              <input
-                type="text"
-                maxLength={20}
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="e.g. Samuel, Deborah"
-                className="arcade-input font-semibold text-sm sm:text-lg py-2.5 sm:py-3"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="arcade-btn arcade-btn-primary w-full py-3 sm:py-4 text-xs sm:text-base shadow-xl shadow-amber-500/30 mt-1"
-            >
-              <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" /> ENTER GAME SESSION
-            </button>
-          </form>
-
+          <button
+            id="btn-go-home"
+            onClick={() => window.history.back()}
+            className="w-full py-3 px-4 bg-[#182032] hover:bg-[#202b44] border border-[#2b3956] text-slate-200 font-semibold text-xs rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" /> Go back
+          </button>
         </div>
       </div>
     );
   }
 
-  // Current game info & current round
+  // ── 2. JOIN SCREEN (session exists but player hasn't joined) ───────────
+  if (!currentPlayer) {
+    const handleJoinSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      const code = inputCode.trim().toUpperCase();
+      if (code.length < 6) return;
+      onJoin(code);
+    };
+
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-sm bg-[#0e131f] border-2 border-[#ccff00]/30 rounded-2xl p-6 space-y-4 shadow-xl">
+          <div className="text-center space-y-1">
+            <h2 className="font-display text-xl font-bold text-white">
+              Join Live Session
+            </h2>
+            <p className="text-xs text-slate-400">
+              Enter room code to join the competition
+            </p>
+          </div>
+
+          <form onSubmit={handleJoinSubmit} className="space-y-3.5" noValidate>
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                SESSION CODE
+              </label>
+              <input
+                id="pv-input-code"
+                type="text"
+                maxLength={6}
+                value={inputCode}
+                onChange={e => setInputCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                placeholder="e.g. 4L27B1"
+                className="w-full bg-[#080b12] border-2 border-[#263148] focus:border-[#ccff00] rounded-xl py-3 px-4 font-mono text-center text-xl font-bold tracking-[0.2em] text-white uppercase outline-none"
+                autoComplete="off"
+                autoCapitalize="characters"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3.5 bg-[#ccff00] hover:bg-[#b8e600] active:scale-[0.98] text-[#060902] font-display font-extrabold text-sm rounded-xl transition-all cursor-pointer"
+            >
+              Enter Game Room
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ── GAME ACTIVE ────────────────────────────────────────────────────────
   const currentGameInfo = BIBLE_GAMES.find(g => g.id === session.currentGame) || BIBLE_GAMES[0];
+  const GameIcon = GAME_ICONS[session.currentGame] ?? Zap;
   const currentRound = session.currentRound;
-  
-  // Check if player has already submitted for this active round
+
   const playerAnswersForRound: AnswerItem[] = (currentRound && session.answers[currentRound.id]) || [];
   const existingSubmission = playerAnswersForRound.find(a => a.playerId === currentPlayer.id);
   const isSubmitted = !!existingSubmission;
@@ -111,183 +140,235 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
     onSubmitAnswer(choice);
   };
 
+  const timerPct = currentRound && currentRound.timerDuration > 0
+    ? Math.max(0, Math.min(100, (currentRound.remainingSeconds / currentRound.timerDuration) * 100))
+    : 100;
+
+  const isLowTime = currentRound && currentRound.timerDuration > 0 && currentRound.remainingSeconds <= 5;
+
   return (
-    <div className="max-w-xl mx-auto py-2 sm:py-6 space-y-3 sm:space-y-6 px-1.5 sm:px-4 max-w-full overflow-x-hidden">
-      
-      {/* Player Header Banner */}
-      <div className="arcade-card p-3 sm:p-4 flex items-center justify-between border-amber-500/30 bg-slate-900/90 gap-2">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center font-arcade font-extrabold text-amber-400 flex-shrink-0 text-sm sm:text-base">
-            👤
+    <div className="w-full max-w-xl mx-auto px-3 sm:px-6 py-2.5 sm:py-5 space-y-3.5 sm:space-y-4">
+
+      {/* ── 1. COMPACT TOP STATUS BAR ─────────────────────────────── */}
+      <div className="bg-[#0e131f] border border-[#1d2538] rounded-xl p-3 flex items-center justify-between gap-2 shadow-md">
+        
+        {/* Left: User Identity */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 flex items-center justify-center text-[#ccff00] font-mono font-bold text-xs shrink-0">
+            {currentPlayer.username?.[0]?.toUpperCase() || 'U'}
           </div>
           <div className="min-w-0">
-            <h3 className="font-arcade font-bold text-white text-xs sm:text-base truncate">
-              {currentPlayer.name}
-            </h3>
-            <span className="text-[9px] sm:text-[11px] font-semibold text-amber-400 font-mono block">
-              CODE: {session.code}
-            </span>
+            <div className="font-mono text-xs sm:text-sm font-bold text-white truncate">
+              @{currentPlayer.username}
+            </div>
+            <div className="text-[10px] text-slate-400 font-mono">
+              ROOM: <span className="text-[#ccff00] font-bold">{session.code}</span>
+            </div>
           </div>
         </div>
 
-        <div className="text-right flex-shrink-0">
-          <span className="font-arcade text-lg sm:text-2xl font-black gold-gradient-text block leading-none">
+        {/* Right: Score Counter */}
+        <div className="flex items-baseline gap-1 bg-[#141a29] border border-[#232d44] rounded-lg px-3 py-1.5 shrink-0">
+          <span className="font-display text-lg sm:text-xl font-black text-[#ccff00] leading-none">
             {currentPlayer.score}
           </span>
-          <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest block mt-0.5">
-            POINTS
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            PTS
           </span>
         </div>
       </div>
 
-      {/* Game Header Badge */}
-      <div className="arcade-card p-2.5 sm:p-4 border-cyan-500/30 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <span className="text-xl sm:text-2xl flex-shrink-0">{currentGameInfo.icon}</span>
+      {/* ── 2. CURRENT GAME MODULE BADGE ─────────────────────────── */}
+      <div className="bg-[#0f1422] border border-[#1c2438] rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div 
+            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border"
+            style={{
+              color: currentGameInfo.accentColor,
+              backgroundColor: `${currentGameInfo.accentColor}15`,
+              borderColor: `${currentGameInfo.accentColor}40`
+            }}
+          >
+            <GameIcon className="w-4 h-4" />
+          </div>
           <div className="min-w-0">
-            <h4 className="font-arcade text-xs sm:text-sm font-bold text-white truncate">
+            <h4 className="font-display font-bold text-xs sm:text-sm text-white truncate">
               {currentGameInfo.title}
             </h4>
-            <p className="text-[9px] sm:text-[11px] text-cyan-400 font-semibold uppercase truncate">
+            <p className="text-[10px] font-semibold uppercase tracking-wider truncate" style={{ color: currentGameInfo.accentColor }}>
               {currentGameInfo.subtitle}
             </p>
           </div>
         </div>
 
-        <span className={`arcade-badge text-[9px] sm:text-xs py-0.5 sm:py-1 px-1.5 sm:px-2.5 flex-shrink-0 ${
-          session.status === 'LIVE' ? 'badge-green' : 'badge-gold'
+        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border shrink-0 ${
+          session.status === 'LIVE'
+            ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 animate-pulse'
+            : 'bg-slate-800 text-slate-400 border-slate-700'
         }`}>
           {session.status}
         </span>
       </div>
 
-      {/* 2. WAITING FOR NEXT ROUND */}
+      {/* ── 3. STATE PANELS ───────────────────────────────────────── */}
+
+      {/* A. WAITING FOR NEXT ROUND */}
       {(!currentRound || session.status === 'WAITING') && (
-        <div className="arcade-card p-6 sm:p-8 text-center space-y-3 sm:space-y-4">
-          <Clock className="w-8 h-8 sm:w-12 sm:h-12 text-amber-400 mx-auto" />
-          <h3 className="font-arcade text-base sm:text-xl font-extrabold gold-gradient-text">
-            WAITING FOR ADMIN...
-          </h3>
-          <p className="text-slate-400 text-[11px] sm:text-xs max-w-sm mx-auto">
-            Get ready! The administrator will start the next question shortly.
-          </p>
+        <div className="bg-[#0e131f] border border-[#1d2538] rounded-2xl p-6 sm:p-8 text-center space-y-3.5 shadow-lg">
+          <div className="w-12 h-12 rounded-full bg-[#182032] border border-[#27334d] flex items-center justify-center text-[#ccff00] mx-auto animate-pulse">
+            <Clock className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-display text-base sm:text-lg font-bold text-white">
+              Waiting for Host
+            </h3>
+            <p className="text-xs text-slate-400 max-w-xs mx-auto">
+              Get ready! The host will launch the next question shortly.
+            </p>
+          </div>
         </div>
       )}
 
-      {/* 3. LIVE QUESTION VIEW */}
+      {/* B. LIVE QUESTION ACTIVE */}
       {currentRound && session.status === 'LIVE' && (
-        <div className="arcade-card arcade-card-gold p-3.5 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="bg-[#0f1422] border-2 border-[#ccff00]/40 rounded-2xl p-4 sm:p-6 space-y-4 shadow-xl">
           
-          {/* Timer bar if active */}
+          {/* Countdown Timer */}
           {currentRound.timerDuration > 0 && (
-            <div className="space-y-1 sm:space-y-1.5">
-              <div className="flex items-center justify-between text-[10px] sm:text-xs font-arcade font-bold text-amber-400">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> TIME REMAINING:
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-bold">
+                <span className="flex items-center gap-1.5 text-slate-300">
+                  <Clock className="w-3.5 h-3.5 text-[#ccff00]" /> TIME REMAINING
                 </span>
-                <span className="font-mono text-sm sm:text-base">{currentRound.remainingSeconds}s</span>
+                <span className={`font-mono text-sm sm:text-base font-black ${
+                  isLowTime ? 'text-rose-400 animate-pulse' : 'text-[#ccff00]'
+                }`}>
+                  {currentRound.remainingSeconds}s
+                </span>
               </div>
-              <div className="timer-bar-container">
+              <div className="w-full h-2 bg-[#080b12] rounded-full overflow-hidden border border-[#20293d]">
                 <div 
-                  className="timer-bar-fill" 
-                  style={{ width: `${(currentRound.remainingSeconds / currentRound.timerDuration) * 100}%` }}
+                  className={`h-full transition-all duration-1000 ${
+                    isLowTime ? 'bg-rose-500' : 'bg-[#ccff00]'
+                  }`}
+                  style={{ width: `${timerPct}%` }}
                 />
               </div>
             </div>
           )}
 
-          {/* Question Text */}
-          <div className="text-center bg-slate-950/80 rounded-xl p-3.5 sm:p-5 border border-white/10">
-            <span className="arcade-badge badge-gold mb-1.5 text-[9px] sm:text-xs py-0.5 px-2">
+          {/* Question Text Box */}
+          <div className="bg-[#090c14] border border-[#1e273b] rounded-xl p-4 text-center space-y-1.5">
+            <span className="inline-block text-[10px] font-mono font-bold uppercase tracking-wider text-[#ccff00] bg-[#ccff00]/10 px-2 py-0.5 rounded border border-[#ccff00]/25">
               ROUND #{currentRound.roundNumber}
             </span>
-            <h3 className="font-arcade text-base sm:text-2xl font-black text-white leading-snug break-words">
+            <h3 className="font-display text-base sm:text-xl font-extrabold text-white leading-snug break-words">
               {currentRound.questionText}
             </h3>
           </div>
 
-          {/* SUBMISSION INPUT / LOCK STATE */}
+          {/* Input or Choice Area */}
           {isSubmitted ? (
-            <div className="bg-emerald-500/10 border border-emerald-500/40 rounded-xl p-4 sm:p-6 text-center space-y-2">
-              <CheckCircle className="w-8 h-8 sm:w-12 sm:h-12 text-emerald-400 mx-auto" />
-              <h4 className="font-arcade text-base sm:text-lg font-bold text-emerald-300">
-                ANSWER RECEIVED!
-              </h4>
-              <p className="text-xs text-slate-300 font-mono bg-slate-900/90 py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg border border-white/10 inline-block max-w-full break-words">
-                YOUR ANSWER: "{existingSubmission.answerText}"
-              </p>
-              <p className="text-[10px] sm:text-[11px] text-slate-400 pt-1">
+            /* Locked In State */
+            <div className="bg-emerald-500/10 border-2 border-emerald-500/30 rounded-xl p-4 text-center space-y-2">
+              <div className="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <h4 className="font-display text-sm font-bold text-emerald-300">
+                  ANSWER LOCKED IN
+                </h4>
+                <p className="font-mono text-xs text-white bg-[#090d16] border border-emerald-500/20 py-1.5 px-3 rounded-lg inline-block break-words max-w-full">
+                  "{existingSubmission.answerText}"
+                </p>
+              </div>
+              <p className="text-[10px] text-slate-400">
                 Timestamp recorded. Waiting for round evaluation...
               </p>
             </div>
           ) : (
-            <div className="space-y-3 sm:space-y-4">
+            /* Active Answer Submission */
+            <div className="space-y-3">
               
-              {/* GAME 2: Scripture or Spam Choices */}
+              {/* CHOICE FORMAT: Scripture or Spam */}
               {session.currentGame === 'SCRIPTURE_OR_SPAM' && (
-                <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <button
+                    id="choice-scripture"
                     onClick={() => handleChoiceSubmit('SCRIPTURE')}
-                    className="arcade-choice-btn py-3.5 sm:py-5 text-xs sm:text-base font-arcade font-extrabold shadow-lg shadow-emerald-500/20 border border-emerald-500/40 hover:border-emerald-400"
+                    className="min-h-[58px] py-3.5 px-4 rounded-xl bg-[#102419] hover:bg-[#153424] active:scale-[0.98] border-2 border-emerald-500/40 hover:border-emerald-400 text-emerald-300 font-display font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all"
                   >
-                    📜 SCRIPTURE
+                    <BookOpen className="w-5 h-5 shrink-0" />
+                    <span>SCRIPTURE</span>
                   </button>
                   <button
+                    id="choice-spam"
                     onClick={() => handleChoiceSubmit('SPAM QUOTE')}
-                    className="arcade-choice-btn py-3.5 sm:py-5 text-xs sm:text-base font-arcade font-extrabold shadow-lg shadow-red-500/20 border border-red-500/40 hover:border-red-400"
+                    className="min-h-[58px] py-3.5 px-4 rounded-xl bg-[#261217] hover:bg-[#381a22] active:scale-[0.98] border-2 border-rose-500/40 hover:border-rose-400 text-rose-300 font-display font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all"
                   >
-                    🚫 SPAM QUOTE
+                    <XCircle className="w-5 h-5 shrink-0" />
+                    <span>SPAM QUOTE</span>
                   </button>
                 </div>
               )}
 
-              {/* GAME 3: OT or NT Choices */}
+              {/* CHOICE FORMAT: OT or NT */}
               {session.currentGame === 'OT_OR_NT' && (
-                <div className="grid grid-cols-1 xs:grid-cols-2 gap-2.5 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <button
+                    id="choice-ot"
                     onClick={() => handleChoiceSubmit('OLD TESTAMENT')}
-                    className="arcade-choice-btn py-3.5 sm:py-5 text-xs sm:text-base font-arcade font-extrabold shadow-lg shadow-amber-500/20 border border-amber-500/40"
+                    className="min-h-[58px] py-3.5 px-4 rounded-xl bg-[#221a0f] hover:bg-[#342716] active:scale-[0.98] border-2 border-amber-500/40 hover:border-amber-400 text-amber-300 font-display font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all"
                   >
-                    📜 OLD TESTAMENT
+                    <BookOpen className="w-5 h-5 shrink-0" />
+                    <span>OLD TESTAMENT</span>
                   </button>
                   <button
+                    id="choice-nt"
                     onClick={() => handleChoiceSubmit('NEW TESTAMENT')}
-                    className="arcade-choice-btn py-3.5 sm:py-5 text-xs sm:text-base font-arcade font-extrabold shadow-lg shadow-purple-500/20 border border-purple-500/40"
+                    className="min-h-[58px] py-3.5 px-4 rounded-xl bg-[#1a1428] hover:bg-[#261d3c] active:scale-[0.98] border-2 border-purple-500/40 hover:border-purple-400 text-purple-300 font-display font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg cursor-pointer transition-all"
                   >
-                    ✝️ NEW TESTAMENT
+                    <Cross className="w-5 h-5 shrink-0" />
+                    <span>NEW TESTAMENT</span>
                   </button>
                 </div>
               )}
 
-              {/* GAME 1, 4, 5: Free Text Input */}
-              {(session.currentGame === 'LETTER_RUSH' || session.currentGame === 'WHO_AM_I' || session.currentGame === 'BIBLE_COUPLES') && (
-                <form onSubmit={handleFormSubmit} className="space-y-2.5 sm:space-y-3">
+              {/* TEXT INPUT FORMAT: Letter Rush, Who Am I, Bible Couples */}
+              {(session.currentGame === 'LETTER_RUSH' ||
+                session.currentGame === 'WHO_AM_I' ||
+                session.currentGame === 'BIBLE_COUPLES') && (
+                <form onSubmit={handleFormSubmit} className="space-y-2.5" noValidate>
                   <div>
-                    <label className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
-                      ENTER YOUR ANSWER
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                      YOUR ANSWER
                     </label>
                     <input
+                      id="answer-input"
                       type="text"
                       value={answerText}
-                      onChange={(e) => setAnswerText(e.target.value)}
+                      onChange={e => setAnswerText(e.target.value)}
                       placeholder={
-                        session.currentGame === 'LETTER_RUSH' 
-                          ? `Character starting with '${currentRound.letter || 'M'}'` 
+                        session.currentGame === 'LETTER_RUSH'
+                          ? `Character starting with "${currentRound.letter || '?'}"`
                           : session.currentGame === 'BIBLE_COUPLES'
-                            ? `Partner for ${currentRound.givenName || 'Adam'}`
-                            : 'Type character name...'
+                          ? `Partner of ${currentRound.givenName || '...'}`
+                          : 'Type character name...'
                       }
-                      className="arcade-input font-bold text-sm sm:text-lg py-3 sm:py-4"
+                      className="w-full bg-[#080b12] border-2 border-[#263148] focus:border-[#ccff00] rounded-xl py-3 px-4 font-semibold text-base sm:text-lg text-white placeholder:text-slate-500 outline-none transition-colors"
                       autoFocus
+                      autoComplete="off"
                       required
                     />
                   </div>
 
                   <button
+                    id="btn-submit-answer"
                     type="submit"
-                    className="arcade-btn arcade-btn-primary w-full py-3 sm:py-4 text-xs sm:text-base shadow-xl shadow-amber-500/30"
+                    className="w-full py-3.5 px-4 bg-[#ccff00] hover:bg-[#b8e600] active:scale-[0.98] text-[#060902] font-display font-extrabold text-sm sm:text-base rounded-xl shadow-lg shadow-[#ccff00]/20 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
-                    <Send className="w-4 h-4 sm:w-5 sm:h-5" /> SUBMIT ANSWER NOW
+                    <Send className="w-4 h-4" />
+                    <span>SUBMIT ANSWER</span>
                   </button>
                 </form>
               )}
@@ -298,46 +379,94 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
         </div>
       )}
 
-      {/* 4. ROUND CLOSED / REVIEW / RESULTS */}
+      {/* C. ROUND CLOSED / IN REVIEW */}
       {currentRound && (session.status === 'CLOSED' || session.status === 'REVIEW') && (
-        <div className="arcade-card p-4 sm:p-6 text-center space-y-2 sm:space-y-3">
-          <Lock className="w-8 h-8 sm:w-10 sm:h-10 text-amber-400 mx-auto" />
-          <h3 className="font-arcade text-base sm:text-lg font-bold text-white">
-            ROUND SUBMISSIONS CLOSED
-          </h3>
-          <p className="text-[11px] sm:text-xs text-slate-400">
-            The administrator is reviewing answers and official timestamps.
-          </p>
+        <div className="bg-[#0e131f] border border-[#1d2538] rounded-2xl p-6 text-center space-y-3 shadow-lg">
+          <div className="w-10 h-10 rounded-full bg-[#182032] border border-[#27334d] flex items-center justify-center text-slate-400 mx-auto">
+            <Lock className="w-5 h-5" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-display text-base font-bold text-white">
+              Submissions Closed
+            </h3>
+            <p className="text-xs text-slate-400">
+              The host is reviewing answers and awarding points.
+            </p>
+          </div>
         </div>
       )}
 
-      {/* 5. RESULTS REVEALED */}
+      {/* D. RESULTS REVEALED */}
       {currentRound && session.status === 'RESULTS' && (
-        <div className="arcade-card arcade-card-cyan p-4 sm:p-6 text-center space-y-3 sm:space-y-4">
-          <h3 className="font-arcade text-base sm:text-xl font-extrabold cyan-gradient-text">
-            ROUND RESULTS REVEALED
-          </h3>
-          <div className="bg-slate-900/90 p-3 sm:p-4 rounded-xl border border-white/10">
-            <span className="text-[10px] sm:text-xs text-slate-400 block font-semibold">OFFICIAL CORRECT ANSWER:</span>
-            <span className="font-arcade text-sm sm:text-lg font-bold text-amber-300 block mt-1 break-words">
+        <div className="bg-[#0f1422] border-2 border-cyan-500/40 rounded-2xl p-4 sm:p-6 space-y-4 shadow-xl">
+          <div className="text-center space-y-0.5">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded border border-cyan-500/25">
+              ROUND EVALUATED
+            </span>
+            <h3 className="font-display text-lg sm:text-xl font-bold text-white">
+              Results Revealed
+            </h3>
+          </div>
+
+          {/* Correct Answer Banner */}
+          <div className="bg-[#080b12] border border-[#1e273b] rounded-xl p-3.5 text-center space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              OFFICIAL CORRECT ANSWER:
+            </span>
+            <p className="font-display text-base sm:text-lg font-bold text-[#ccff00] break-words">
               {currentRound.correctAnswerText}
+            </p>
+          </div>
+
+          {/* Player Result Banner */}
+          {existingSubmission && (
+            <div className={`p-4 rounded-xl border-2 flex items-center gap-3 ${
+              existingSubmission.status === 'CORRECT'
+                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                : 'bg-rose-500/10 border-rose-500/40 text-rose-300'
+            }`}>
+              {existingSubmission.status === 'CORRECT' ? (
+                <>
+                  <div className="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                    <Trophy className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-display font-bold text-sm text-emerald-300">
+                      CORRECT!
+                    </h4>
+                    <p className="text-xs text-emerald-400/90 font-mono">
+                      +{existingSubmission.pointsAwarded} point{existingSubmission.pointsAwarded !== 1 ? 's' : ''} awarded
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-9 h-9 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 shrink-0">
+                    <XCircle className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-display font-bold text-sm text-rose-300">
+                      INCORRECT
+                    </h4>
+                    <p className="text-xs text-slate-400 font-mono truncate">
+                      Your answer: "{existingSubmission.answerText}"
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Total Score Summary */}
+          <div className="flex items-center justify-between bg-[#0e131f] border border-[#1d2538] rounded-xl px-4 py-2.5">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              TOTAL SCORE
+            </span>
+            <span className="font-display text-xl font-black text-[#ccff00]">
+              {currentPlayer.score} PTS
             </span>
           </div>
 
-          {existingSubmission && (
-            <div className={`p-3 sm:p-4 rounded-xl border ${
-              existingSubmission.status === 'CORRECT' 
-                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300' 
-                : 'bg-red-500/10 border-red-500/40 text-red-300'
-            }`}>
-              <span className="font-arcade text-xs sm:text-sm font-bold block">
-                {existingSubmission.status === 'CORRECT' ? '🎉 YOU GOT IT RIGHT!' : '❌ INCORRECT'}
-              </span>
-              <span className="text-[10px] sm:text-xs font-mono block mt-1">
-                Points awarded: +{existingSubmission.pointsAwarded}
-              </span>
-            </div>
-          )}
         </div>
       )}
 
