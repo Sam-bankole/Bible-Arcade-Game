@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getDatabase, ref, onValue, set, update } from 'firebase/database';
+import { getDatabase, ref, onValue, set, update, get, runTransaction } from 'firebase/database';
 
 // Firebase Client Config (Firebase web keys are public client identifiers)
 const firebaseConfig = {
@@ -31,4 +31,4 @@ try {
 
 export const db = getDatabase(app);
 
-export { ref, onValue, set, update };
+export { ref, onValue, set, update, get, runTransaction };
