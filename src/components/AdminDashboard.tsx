@@ -5,9 +5,8 @@ import { AdminQuestionForm } from './AdminQuestionForm';
 import { AnswerQueue } from './AnswerQueue';
 import { LeaderboardView } from './LeaderboardView';
 import { 
-  XCircle, Eye, EyeOff, ShieldCheck, Lock, Unlock, Zap, Trophy, Award, 
-  Radio, Tv, RefreshCw, Copy, Check, Plus, Layers, ArrowRight, Play,
-  Users, History, LogOut
+  Lock, Unlock, Play, XCircle, Zap, Award, ArrowRight, 
+  Copy, Check, Plus, Layers, Tv, RefreshCw, LogOut, Hash, Globe, X
 } from 'lucide-react';
 import { syncEngine, generate6DigitCode } from '../utils/syncEngine';
 
@@ -68,7 +67,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setIsAuthenticated(true);
       setAuthError('');
     } else {
-      setAuthError('Invalid Admin Password. Access Denied.');
+      setAuthError('Invalid administrator password');
     }
   };
 
@@ -111,25 +110,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsSessionModalOpen(false);
   };
 
+  // ─── AUTH GATE ───────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-4">
-        <div className="arcade-card arcade-card-gold p-6 sm:p-8 max-w-md w-full text-center">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mx-auto mb-4 text-amber-400">
-            <Lock className="w-8 h-8" />
-          </div>
-          
-          <h2 className="font-arcade text-2xl font-black gold-gradient-text mb-1">
-            STRICT ADMIN ACCESS
-          </h2>
-          <p className="text-slate-400 text-xs mb-6">
-            Enter administrator password to unlock the event control desk.
-          </p>
-
-          <form onSubmit={handlePasswordAuth} className="space-y-4">
+        <div className="ctrl-card p-6 sm:p-8 max-w-sm w-full space-y-4">
+          <div className="flex items-center gap-3 pb-3 border-b border-[#232838]">
+            <div className="w-9 h-9 rounded bg-[#1f2433] border border-[#2e354a] flex items-center justify-center text-amber-500">
+              <Lock className="w-4 h-4" />
+            </div>
             <div>
-              <label className="block text-[11px] font-bold uppercase text-amber-400 mb-1 text-left">
-                ADMIN SECURITY PASSWORD
+              <h2 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">
+                Stage Console
+              </h2>
+              <p className="text-xs text-zinc-500">Host authentication required</p>
+            </div>
+          </div>
+
+          <form onSubmit={handlePasswordAuth} className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 mb-1">
+                Admin Password
               </label>
               <input
                 type="password"
@@ -138,24 +139,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   setPasswordInput(e.target.value);
                   setAuthError('');
                 }}
-                placeholder="Enter Admin Password"
-                className="arcade-input text-center text-lg font-mono font-bold tracking-wider"
+                placeholder="Enter password"
+                className="ctrl-input font-mono"
                 autoFocus
                 required
               />
             </div>
 
             {authError && (
-              <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/40 text-red-300 text-xs font-semibold">
+              <div className="p-2 rounded bg-rose-950/50 border border-rose-800 text-rose-300 text-xs">
                 {authError}
               </div>
             )}
 
             <button
               type="submit"
-              className="arcade-btn arcade-btn-primary w-full py-3.5 text-sm shadow-xl shadow-amber-500/30"
+              className="ctrl-btn ctrl-btn-primary w-full py-2.5 text-xs font-bold"
             >
-              <Unlock className="w-4 h-4" /> UNLOCK CONTROL CENTER
+              <Unlock className="w-3.5 h-3.5" /> Unlock Console
             </button>
           </form>
         </div>
@@ -163,6 +164,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     );
   }
 
+  // ─── DATA RESOLUTION ─────────────────────────────────────────
   const currentRound = session?.currentRound || null;
   const answersObj = session?.answers || {};
   const currentAnswers: AnswerItem[] = (currentRound && answersObj[currentRound.id]) || [];
@@ -171,212 +173,218 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const roundHistory = session?.roundHistory || [];
 
   return (
-    <div className="py-4 sm:py-6 space-y-5 sm:space-y-6 max-w-full">
+    <div className="py-4 space-y-3.5 max-w-full">
       
-      {/* 1. TOP HEADER & SESSION CONTROL BAR */}
-      <div className="arcade-card p-4 sm:p-5 border-amber-500/30 bg-slate-900/95 space-y-4">
+      {/* ═══════════════════════════════════════════════════════════
+          1. STAGE CONSOLE TOP BAR — Functional, High-Utility Header
+          ═══════════════════════════════════════════════════════════ */}
+      <div className="ctrl-card p-3 sm:p-4 space-y-3">
         
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        {/* Row 1: Session Controls & Stats */}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
           
-          {/* Left Info & 6-Digit Session Badge */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
-            <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 flex-shrink-0">
-              <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7" />
+          {/* Left: Code, Join link, Connected players */}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            
+            {/* Session Code Display */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#0e1017] border border-[#2e354a]">
+              <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">CODE</span>
+              <span className="font-mono-tabular font-bold text-zinc-100 tracking-widest text-sm">
+                {session.code}
+              </span>
+              <button
+                onClick={handleCopyCode}
+                className="p-1 rounded text-zinc-400 hover:text-zinc-100 hover:bg-[#1a1e2b] transition-colors ml-0.5"
+                title="Copy Session Code"
+              >
+                {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
             </div>
 
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="font-arcade text-lg sm:text-xl font-extrabold gold-gradient-text tracking-wide">
-                  ADMIN CONTROL CENTER
-                </h2>
-                {session.isEnded && (
-                  <span className="text-[10px] font-arcade font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40">
-                    SESSION ENDED
-                  </span>
-                )}
-              </div>
+            {/* Quick Player Link */}
+            <button
+              onClick={handleCopyLink}
+              className="ctrl-btn ctrl-btn-secondary text-xs py-1.5 px-2.5 flex items-center gap-1.5"
+              title="Copy Direct Join URL"
+            >
+              <Globe className="w-3.5 h-3.5 text-zinc-400" />
+              <span>{copiedLink ? 'Link Copied' : 'Player Link'}</span>
+            </button>
 
-              {/* Session Code & Copy Actions */}
-              <div className="flex items-center gap-2 mt-1 flex-wrap text-xs">
-                
-                {/* 6-Digit Code Badge */}
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40">
-                  <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">ENTRANCE CODE:</span>
-                  <span className="font-mono font-black text-amber-300 text-sm tracking-wider">{session.code}</span>
-                  
-                  {/* Quick Copy Code Button */}
-                  <button
-                    onClick={handleCopyCode}
-                    className="p-1 text-slate-400 hover:text-white rounded hover:bg-white/10 transition-colors ml-0.5"
-                    title="Copy 6-Digit Code"
-                  >
-                    {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
+            {/* Session Switcher */}
+            <button
+              onClick={() => setIsSessionModalOpen(true)}
+              className="ctrl-btn ctrl-btn-secondary text-xs py-1.5 px-2.5 flex items-center gap-1.5"
+            >
+              <Layers className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Sessions ({knownSessions.length || 1})</span>
+            </button>
 
-                {/* Copy Player Join Link */}
-                <button
-                  onClick={handleCopyLink}
-                  className="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-white/10 text-slate-300 text-[11px] font-bold flex items-center gap-1 transition-colors"
-                  title="Copy Direct Join URL"
-                >
-                  {copiedLink ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-amber-400" />}
-                  <span>{copiedLink ? 'LINK COPIED!' : 'COPY PLAYER LINK'}</span>
-                </button>
-
-                {/* Session Switcher Button */}
-                <button
-                  onClick={() => setIsSessionModalOpen(true)}
-                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-[11px] font-bold flex items-center gap-1 transition-colors"
-                >
-                  <Layers className="w-3 h-3 text-amber-400" />
-                  <span>SESSIONS ({knownSessions.length || 1})</span>
-                </button>
-
-                {/* Player count */}
-                <span className="text-slate-400 flex items-center gap-1">
-                  <Users className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>PLAYERS: <strong className="text-cyan-300 font-mono font-bold">{playerCount}</strong></span>
-                </span>
-
-              </div>
+            {/* Live Contestants Count */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-zinc-400 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>{playerCount} connected</span>
             </div>
+
           </div>
 
-          {/* Right Action Icons & Toggles */}
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
+          {/* Right: Stage utilities */}
+          <div className="flex items-center gap-2 flex-wrap">
             
             {/* Leaderboard visibility toggle */}
             <button
               onClick={() => onToggleLeaderboard(!session.showLeaderboardToPlayers)}
-              className={`arcade-btn text-[10px] sm:text-xs py-1.5 px-2.5 flex items-center gap-1.5 ${
-                session.showLeaderboardToPlayers ? 'arcade-btn-cyan' : 'arcade-btn-secondary'
+              className={`ctrl-btn text-xs py-1.5 px-2.5 ${
+                session.showLeaderboardToPlayers
+                  ? 'bg-[#18231c] text-emerald-300 border border-emerald-600/40'
+                  : 'ctrl-btn-secondary text-zinc-400'
               }`}
-              title="Toggle player leaderboard access"
+              title="Toggle contestant leaderboard visibility"
             >
-              {session.showLeaderboardToPlayers ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5 text-slate-500" />}
-              <span>LEADERBOARD: {session.showLeaderboardToPlayers ? 'VISIBLE' : 'HIDDEN'}</span>
+              <span>Scoreboard: {session.showLeaderboardToPlayers ? 'Visible' : 'Hidden'}</span>
             </button>
 
-            {/* Projector / Stage Display */}
+            {/* Stage Projector */}
             <button
               onClick={onOpenProjector}
-              className="arcade-btn arcade-btn-purple text-[10px] sm:text-xs py-1.5 px-2.5 flex items-center gap-1.5"
-              title="Launch Big Screen Projector View"
+              className="ctrl-btn ctrl-btn-secondary text-xs py-1.5 px-2.5"
+              title="Launch Big Screen View"
             >
-              <Tv className="w-3.5 h-3.5" /> STAGE DISPLAY
+              <Tv className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Projector</span>
             </button>
 
-            {/* Lock Control Desk */}
+            {/* Lock Console */}
             <button
               onClick={handleLockSession}
-              className="arcade-btn arcade-btn-secondary text-[10px] sm:text-xs py-1.5 px-2.5 flex items-center gap-1.5"
-              title="Lock Admin Control Desk"
+              className="ctrl-btn ctrl-btn-secondary text-xs py-1.5 px-2"
+              title="Lock Admin Console"
             >
-              <Lock className="w-3.5 h-3.5 text-amber-400" /> LOCK
+              <Lock className="w-3.5 h-3.5 text-zinc-400" />
             </button>
 
-            {/* Reset Session */}
+            {/* Reset */}
             <button
               onClick={() => {
-                if (confirm('Are you sure you want to reset all scores and round data for this session?')) {
+                if (confirm('Reset all scores and active round data for this session?')) {
                   onResetSession();
                 }
               }}
-              className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 transition-colors"
-              title="Reset Current Session"
+              className="ctrl-btn ctrl-btn-secondary text-xs py-1.5 px-2 text-zinc-400 hover:text-rose-400"
+              title="Reset Session"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
 
           </div>
-
         </div>
 
-        {/* 2. THE EVENT CONDUCTOR (Workflow Step-by-Step Bar) */}
-        <div className="bg-slate-950/80 p-3 sm:p-4 rounded-xl border border-amber-500/30 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        {/* ═══════════════════════════════════════════════════════════
+            2. LIVE EVENT STATUS STRIP — Operational State Machine
+            ═══════════════════════════════════════════════════════════ */}
+        <div className="p-3 rounded-lg bg-[#0e1017] border border-[#232838] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           
-          <div className="flex items-center gap-3">
-            <span className={`arcade-badge font-bold ${
-              session.status === 'LIVE' 
-                ? 'badge-green animate-pulse' 
-                : session.status === 'CLOSED' 
-                  ? 'badge-red' 
-                  : session.status === 'REVIEW'
-                    ? 'badge-purple'
-                    : session.status === 'RESULTS'
-                      ? 'badge-gold'
-                      : 'badge-gold'
-            }`}>
-              STATUS: {session.status}
-            </span>
+          {/* Left: State Pill & Question Summary */}
+          <div className="flex items-center gap-3 min-w-0 flex-wrap">
+            
+            {/* Status Flag */}
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold font-mono tracking-wider">
+              {session.status === 'LIVE' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-emerald-400 font-black">LIVE</span>
+                </>
+              ) : session.status === 'CLOSED' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  <span className="text-rose-400 font-bold">CLOSED</span>
+                </>
+              ) : session.status === 'REVIEW' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-purple-500" />
+                  <span className="text-purple-300 font-bold">REVIEW</span>
+                </>
+              ) : session.status === 'RESULTS' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span className="text-amber-400 font-bold">RESULTS</span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-zinc-500" />
+                  <span className="text-zinc-400 font-bold">WAITING</span>
+                </>
+              )}
+            </div>
 
+            {/* Round info */}
             {currentRound ? (
-              <div className="text-xs text-slate-300 flex items-center gap-1.5 font-medium">
-                <span className="font-arcade text-amber-400">ROUND #{currentRound.roundNumber}</span>
-                <span>•</span>
-                <span className="text-slate-400 truncate max-w-[200px] sm:max-w-[300px]">
+              <div className="flex items-center gap-2 text-xs min-w-0 flex-wrap">
+                <span className="font-mono-tabular font-bold text-zinc-200">
+                  Round #{currentRound.roundNumber}
+                </span>
+                <span className="text-zinc-600">•</span>
+                <span className="text-zinc-400 truncate max-w-[200px] sm:max-w-[400px]">
                   {currentRound.questionText}
                 </span>
                 {currentRound.status === 'LIVE' && currentRound.timerDuration > 0 && (
-                  <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono font-bold border border-cyan-500/30">
-                    ⏱️ {currentRound.remainingSeconds}s
+                  <span className="font-mono-tabular font-bold px-2 py-0.5 rounded bg-zinc-800 text-amber-400 text-xs border border-zinc-700">
+                    {currentRound.remainingSeconds}s
                   </span>
                 )}
               </div>
             ) : (
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-zinc-500">
                 Ready for Round #{(roundHistory.length || 0) + 1}
               </span>
             )}
           </div>
 
-          {/* Dynamic Workflow Actions Based on State */}
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Right: Operational Round Action Buttons */}
+          <div className="flex items-center gap-2 flex-wrap justify-start md:justify-end">
             
-            {/* When WAITING: Prompt to prepare & start */}
             {session.status === 'WAITING' && (
               <button
                 onClick={() => setActiveTab('CONTROL')}
-                className="arcade-btn arcade-btn-primary text-xs py-2 px-3.5 flex items-center gap-1.5 shadow-md"
+                className="ctrl-btn ctrl-btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5"
               >
-                <Play className="w-3.5 h-3.5" /> PREPARE & START ROUND
+                <Play className="w-3.5 h-3.5 fill-zinc-950" />
+                <span>Prepare & Start Round</span>
               </button>
             )}
 
-            {/* When LIVE: Close Submissions */}
             {session.status === 'LIVE' && (
               <button
                 onClick={() => onSetRoundState('CLOSED')}
-                className="arcade-btn arcade-btn-red text-xs py-2 px-4 flex items-center gap-1.5 font-bold shadow-lg shadow-red-500/20"
+                className="ctrl-btn ctrl-btn-danger text-xs py-1.5 px-3 flex items-center gap-1.5"
               >
-                <XCircle className="w-4 h-4" /> CLOSE SUBMISSIONS
+                <XCircle className="w-3.5 h-3.5" />
+                <span>Close Submissions</span>
               </button>
             )}
 
-            {/* When CLOSED: Proceed to Review */}
             {session.status === 'CLOSED' && (
               <button
                 onClick={() => onSetRoundState('REVIEW')}
-                className="arcade-btn arcade-btn-purple text-xs py-2 px-4 flex items-center gap-1.5 font-bold shadow-lg shadow-purple-500/20"
+                className="ctrl-btn bg-purple-700 hover:bg-purple-600 text-white text-xs py-1.5 px-3 flex items-center gap-1.5"
               >
-                <Zap className="w-4 h-4" /> REVIEW ANSWERS ({currentAnswers.length})
+                <Zap className="w-3.5 h-3.5" />
+                <span>Review Answers ({currentAnswers.length})</span>
               </button>
             )}
 
-            {/* When REVIEW: Reveal Results */}
             {session.status === 'REVIEW' && (
               <button
                 onClick={() => onSetRoundState('RESULTS')}
-                className="arcade-btn arcade-btn-green text-xs py-2 px-4 flex items-center gap-1.5 font-bold shadow-lg shadow-emerald-500/20"
+                className="ctrl-btn ctrl-btn-success text-xs py-1.5 px-3 flex items-center gap-1.5"
               >
-                <Award className="w-4 h-4" /> REVEAL WINNER & RESULTS
+                <Award className="w-3.5 h-3.5" />
+                <span>Reveal Winner & Results</span>
               </button>
             )}
 
-            {/* When RESULTS: Next Round or End Session */}
             {session.status === 'RESULTS' && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => {
                     if (onAdvanceToNextRound) {
@@ -386,98 +394,76 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     }
                     setActiveTab('CONTROL');
                   }}
-                  className="arcade-btn arcade-btn-primary text-xs py-2 px-4 flex items-center gap-1.5 font-bold shadow-lg shadow-amber-500/20"
+                  className="ctrl-btn ctrl-btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5"
                 >
-                  <ArrowRight className="w-4 h-4" /> NEXT ROUND (KEEP SCORES)
+                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Next Round (Keep Scores)</span>
                 </button>
 
                 {onEndSession && !session.isEnded && (
                   <button
                     onClick={() => {
-                      if (confirm('End this game session and finalize global tournament standings?')) {
+                      if (confirm('End this tournament session and finalize standings?')) {
                         onEndSession();
                       }
                     }}
-                    className="arcade-btn arcade-btn-secondary text-xs py-2 px-3 flex items-center gap-1.5 text-slate-300 hover:text-red-400"
+                    className="ctrl-btn ctrl-btn-secondary text-xs py-1.5 px-2.5 text-zinc-400 hover:text-rose-400"
                     title="End Session"
                   >
-                    <LogOut className="w-3.5 h-3.5" /> END SESSION
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>End Session</span>
                   </button>
                 )}
               </div>
             )}
-
           </div>
 
         </div>
 
       </div>
 
-      {/* 3. NAVIGATION TABS */}
-      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 border-b border-white/10 pb-2">
-        
-        <button
-          onClick={() => setActiveTab('CONTROL')}
-          className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-arcade font-bold transition-all flex items-center gap-1.5 ${
-            activeTab === 'CONTROL' 
-              ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
-              : 'text-slate-400 hover:text-white bg-slate-900/50'
-          }`}
-        >
-          <Radio className="w-3.5 h-3.5" /> ACTIVE ROUND & LIVE QUEUE
-        </button>
-
-        <button
-          onClick={() => setActiveTab('SELECTOR')}
-          className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-arcade font-bold transition-all flex items-center gap-1.5 ${
-            activeTab === 'SELECTOR' 
-              ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
-              : 'text-slate-400 hover:text-white bg-slate-900/50'
-          }`}
-        >
-          <Zap className="w-3.5 h-3.5" /> SWITCH GAME MODE
-        </button>
-
-        <button
-          onClick={() => setActiveTab('LEADERBOARD')}
-          className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-arcade font-bold transition-all flex items-center gap-1.5 ${
-            activeTab === 'LEADERBOARD' 
-              ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
-              : 'text-slate-400 hover:text-white bg-slate-900/50'
-          }`}
-        >
-          <Trophy className="w-3.5 h-3.5" /> LEADERBOARD STANDINGS
-        </button>
-
-        <button
-          onClick={() => setActiveTab('HISTORY')}
-          className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-arcade font-bold transition-all flex items-center gap-1.5 ${
-            activeTab === 'HISTORY' 
-              ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20' 
-              : 'text-slate-400 hover:text-white bg-slate-900/50'
-          }`}
-        >
-          <History className="w-3.5 h-3.5" /> ROUND HISTORY ({roundHistory.length})
-        </button>
-
+      {/* ═══════════════════════════════════════════════════════════
+          3. NAVIGATION TABS — Clean Segmented Bar
+          ═══════════════════════════════════════════════════════════ */}
+      <div className="flex items-center gap-1 border-b border-[#232838] pb-1 overflow-x-auto">
+        {[
+          { id: 'CONTROL' as const, label: 'Active Round & Queue' },
+          { id: 'SELECTOR' as const, label: 'Game Modes' },
+          { id: 'LEADERBOARD' as const, label: 'Scoreboard' },
+          { id: 'HISTORY' as const, label: `Round History (${roundHistory.length})` },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-3.5 py-1.5 rounded-t text-xs font-semibold transition-colors whitespace-nowrap ${
+              activeTab === tab.id
+                ? 'bg-[#14171f] text-amber-400 border-b-2 border-amber-400 font-bold'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#14171f]/50'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* 4. TAB CONTENTS */}
+      {/* ═══════════════════════════════════════════════════════════
+          4. TAB CONTENT
+          ═══════════════════════════════════════════════════════════ */}
 
-      {/* TAB 1: ACTIVE ROUND CONTROL & ANSWER QUEUE */}
+      {/* TAB 1: ACTIVE ROUND CONTROL & LIVE ANSWER QUEUE */}
       {activeTab === 'CONTROL' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
           
           {/* Left Column: Question Entry Form (5 Cols) */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="xl:col-span-5">
             <AdminQuestionForm
               gameType={session.currentGame}
               onStartRound={onStartRound}
             />
           </div>
 
-          {/* Right Column: Live Answer Queue (7 Cols) */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* Right Column: Scoreboard Arrival Strip (7 Cols) */}
+          <div className="xl:col-span-7">
             <AnswerQueue
               currentRound={currentRound}
               answers={currentAnswers}
@@ -489,7 +475,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       )}
 
-      {/* TAB 2: GAME MODE SELECTOR */}
+      {/* TAB 2: GAME SELECTOR */}
       {activeTab === 'SELECTOR' && (
         <GameSelector
           selectedGame={session.currentGame}
@@ -502,7 +488,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         />
       )}
 
-      {/* TAB 3: SESSION LEADERBOARD */}
+      {/* TAB 3: LEADERBOARD STANDINGS */}
       {activeTab === 'LEADERBOARD' && (
         <LeaderboardView
           players={session.players}
@@ -513,39 +499,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* TAB 4: ROUND HISTORY */}
       {activeTab === 'HISTORY' && (
-        <div className="arcade-card arcade-card-gold p-4 sm:p-6 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
-            <h3 className="font-arcade text-base sm:text-lg font-bold text-white flex items-center gap-2">
-              <History className="w-4 h-4 text-amber-400" />
-              <span>ROUND HISTORY SUMMARY</span>
+        <div className="ctrl-card p-4 sm:p-5 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#232838]">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-100">
+              Completed Rounds
             </h3>
-            <span className="arcade-badge badge-gold">
-              {roundHistory.length} ROUNDS COMPLETED
+            <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded bg-[#10121a] text-zinc-300 border border-[#232838]">
+              {roundHistory.length} {roundHistory.length === 1 ? 'round' : 'rounds'} completed
             </span>
           </div>
 
           {roundHistory.length === 0 ? (
-            <div className="text-center py-10 text-slate-400">
-              <p className="text-xs font-arcade">NO ROUNDS COMPLETED YET</p>
-              <p className="text-[11px] text-slate-500 mt-1">Completed rounds will be recorded here for review.</p>
+            <div className="text-center py-12 text-zinc-500 bg-[#10121a] rounded-lg border border-dashed border-[#232838]">
+              <p className="text-sm font-medium text-zinc-300">No rounds recorded yet</p>
+              <p className="text-xs text-zinc-500 mt-1">Completed round logs and winners will appear here.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {roundHistory.map((rd, idx) => {
                 const rdAnswers = (answersObj[rd.id] || []);
                 const winner = rdAnswers.find(a => a.isWinner);
                 const correctCount = rdAnswers.filter(a => a.status === 'CORRECT').length;
 
                 return (
-                  <div key={rd.id || idx} className="p-3.5 rounded-xl bg-slate-900/80 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-arcade font-bold text-xs text-amber-400">ROUND #{rd.roundNumber}</span>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 bg-white/5 px-2 py-0.5 rounded">
-                          {rd.gameType.replace('_', ' ')}
+                  <div 
+                    key={rd.id || idx}
+                    className="p-3 rounded-lg bg-[#10121a] border border-[#232838] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono-tabular font-bold text-xs text-amber-400">
+                          ROUND #{rd.roundNumber}
+                        </span>
+                        <span className="text-[10px] uppercase font-bold text-zinc-400 px-1.5 py-0.5 rounded bg-[#1c202d]">
+                          {rd.gameType.replace(/_/g, ' ')}
+                        </span>
+                        <span className="font-mono-tabular text-[11px] text-zinc-500">
+                          {rdAnswers.length} submissions
                         </span>
                       </div>
-                      <p className="text-xs font-semibold text-white">
+                      <p className="text-xs font-semibold text-zinc-200">
                         {rd.questionText}
                       </p>
                       <p className="text-[11px] text-emerald-400 font-mono">
@@ -553,15 +546,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </p>
                     </div>
 
-                    <div className="text-left sm:text-right flex-shrink-0 text-xs">
+                    <div className="shrink-0 text-xs">
                       {winner ? (
-                        <div className="flex items-center gap-1 text-amber-300 font-bold bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30">
-                          <Trophy className="w-3 h-3 text-amber-400" />
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#1f1d14] border border-amber-500/30 text-amber-300 font-bold">
+                          <Award className="w-3.5 h-3.5 text-amber-400" />
                           <span>Winner: {winner.playerName}</span>
                         </div>
                       ) : (
-                        <span className="text-slate-400 text-[11px]">
-                          {correctCount} correct {correctCount === 1 ? 'answer' : 'answers'}
+                        <span className="text-zinc-400 text-xs">
+                          {correctCount} correct
                         </span>
                       )}
                     </div>
@@ -573,30 +566,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       )}
 
-      {/* 5. SESSION SWITCHER / CREATOR MODAL */}
+      {/* ═══════════════════════════════════════════════════════════
+          5. SESSION MANAGER MODAL
+          ═══════════════════════════════════════════════════════════ */}
       {isSessionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="arcade-card arcade-card-gold p-6 max-w-md w-full space-y-5 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+          <div className="ctrl-card p-5 max-w-sm w-full space-y-4 border border-[#2e354a]">
             
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <Layers className="w-5 h-5 text-amber-400" />
-                <h3 className="font-arcade text-lg font-bold text-white">
-                  SESSION MANAGER
-                </h3>
-              </div>
+            <div className="flex items-center justify-between pb-2 border-b border-[#232838]">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-100">
+                Session Manager
+              </h3>
               <button
                 onClick={() => setIsSessionModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-white rounded"
+                className="text-zinc-500 hover:text-zinc-300 p-1"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Create New Session Option */}
-            <div className="space-y-3 bg-slate-900/90 p-4 rounded-xl border border-amber-500/30">
-              <label className="block text-xs font-bold uppercase text-amber-400">
-                CREATE NEW 6-DIGIT GAME SESSION
+            {/* Create New Session */}
+            <div className="space-y-2 bg-[#0e1017] p-3 rounded border border-[#232838]">
+              <label className="block text-[11px] font-bold uppercase text-zinc-400">
+                New 6-Digit Code
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -604,52 +596,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   maxLength={6}
                   value={newCodeInput}
                   onChange={(e) => setNewCodeInput(e.target.value.toUpperCase())}
-                  placeholder="Auto 6-Digit (e.g. 4L27B1)"
-                  className="arcade-input text-xs font-mono font-bold uppercase text-center flex-1"
+                  placeholder="Auto (e.g. 4L27B1)"
+                  className="ctrl-input text-xs font-mono font-bold uppercase text-center flex-1"
                 />
                 <button
                   type="button"
                   onClick={handleCreateNewSession}
-                  className="arcade-btn arcade-btn-primary text-xs py-2 px-3 flex items-center gap-1 flex-shrink-0"
+                  className="ctrl-btn ctrl-btn-primary text-xs py-2 px-3 shrink-0"
                 >
-                  <Plus className="w-3.5 h-3.5" /> CREATE
+                  <Plus className="w-3.5 h-3.5" /> Create
                 </button>
               </div>
-              <p className="text-[10px] text-slate-400">
-                Leave empty to automatically generate a unique 6-character entrance code.
+              <p className="text-[10px] text-zinc-500">
+                Leave blank to auto-generate a 6-character code.
               </p>
             </div>
 
-            {/* Switch to Existing Session List */}
+            {/* Switch to Active */}
             {knownSessions.length > 0 && (
-              <div className="space-y-2">
-                <label className="block text-[11px] font-bold uppercase text-slate-400">
-                  OR SWITCH TO ACTIVE SESSION
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                  Switch Active Session
                 </label>
-                <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
+                <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
                   {knownSessions.map((code) => {
                     const isCurrent = code === session.code;
                     return (
                       <div
                         key={code}
                         onClick={() => !isCurrent && handleSwitchSession(code)}
-                        className={`p-2.5 rounded-lg border text-xs font-mono font-bold flex items-center justify-between transition-colors ${
+                        className={`p-2 rounded text-xs font-mono font-bold flex items-center justify-between transition-colors ${
                           isCurrent
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 cursor-default'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-white/10 cursor-pointer'
+                            ? 'bg-[#1e1c14] text-amber-300 border border-amber-500/30'
+                            : 'bg-[#0e1017] hover:bg-[#1a1e2b] text-zinc-300 border border-[#232838] cursor-pointer'
                         }`}
                       >
-                        <span className="flex items-center gap-2">
-                          <span className="text-amber-400">#</span>
+                        <span className="flex items-center gap-1.5">
+                          <Hash className="w-3 h-3 opacity-50" />
                           <span>{code}</span>
                         </span>
                         {isCurrent ? (
-                          <span className="text-[9px] font-arcade text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded">
-                            ACTIVE
+                          <span className="text-[9px] uppercase px-1.5 py-0.2 rounded bg-amber-500 text-zinc-950 font-bold">
+                            Current
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-400 hover:text-white">
-                            SWITCH →
+                          <span className="text-[10px] text-zinc-500 hover:text-zinc-200">
+                            Switch →
                           </span>
                         )}
                       </div>
@@ -659,13 +651,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             )}
 
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={() => setIsSessionModalOpen(false)}
-                className="arcade-btn arcade-btn-secondary w-full py-2 text-xs"
+                className="ctrl-btn ctrl-btn-secondary w-full text-xs py-1.5"
               >
-                CLOSE
+                Close
               </button>
             </div>
 

@@ -234,7 +234,7 @@ export function App() {
       )}
 
       {/* Main Container */}
-      <main className="arcade-container pb-12">
+      <main className={`${currentView === 'ADMIN' ? 'arcade-admin-container' : 'arcade-container'} pb-12`}>
         {currentView === 'LANDING' && (
           <LandingPage
             sessionCode={session.code}

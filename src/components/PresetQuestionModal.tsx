@@ -1,7 +1,7 @@
 import React from 'react';
 import type { GameType, GameRound } from '../types/game';
 import { PRESET_QUESTIONS } from '../data/presetQuestions';
-import { X, HelpCircle } from 'lucide-react';
+import { X, BookOpen, Check } from 'lucide-react';
 
 interface PresetQuestionModalProps {
   gameType: GameType;
@@ -21,28 +21,32 @@ export const PresetQuestionModal: React.FC<PresetQuestionModalProps> = ({
   const filteredPresets = PRESET_QUESTIONS.filter(q => q.gameType === gameType);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="arcade-card arcade-card-gold w-full max-w-2xl p-6 relative max-h-[85vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+      <div className="ctrl-card w-full max-w-xl p-5 relative max-h-[85vh] flex flex-col border border-[#2e354a] space-y-3">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
-          <h3 className="font-arcade text-lg font-bold text-white">
-            SELECT PRESET QUESTION
-          </h3>
+        <div className="flex items-center justify-between border-b border-[#232838] pb-3">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-amber-500" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-100">
+              Preset Questions
+            </h3>
+          </div>
+
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
+            className="text-zinc-500 hover:text-zinc-300 p-1"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* List */}
-        <div className="overflow-y-auto space-y-3 pr-1 flex-1">
+        <div className="overflow-y-auto space-y-2 pr-1 flex-1">
           {filteredPresets.length === 0 ? (
-            <div className="text-center py-8 text-slate-400">
-              <HelpCircle className="w-10 h-10 mx-auto mb-2 opacity-50" />
-              <p>No presets found for this game mode. Enter custom questions below!</p>
+            <div className="text-center py-10 text-zinc-500 bg-[#0e1017] rounded">
+              <p className="text-xs font-medium text-zinc-300">No preset questions for this format</p>
+              <p className="text-[11px] text-zinc-500 mt-1">Enter your custom question directly into the form.</p>
             </div>
           ) : (
             filteredPresets.map((preset) => (
@@ -56,26 +60,26 @@ export const PresetQuestionModal: React.FC<PresetQuestionModalProps> = ({
                   });
                   onClose();
                 }}
-                className="p-4 rounded-xl bg-slate-900/80 border border-white/10 hover:border-amber-500/50 hover:bg-slate-850 cursor-pointer transition-all flex items-start justify-between gap-4 group"
+                className="p-3 rounded-lg bg-[#0e1017] border border-[#232838] hover:border-[#2f364a] cursor-pointer transition-colors flex items-start justify-between gap-3 group"
               >
-                <div>
-                  <h4 className="font-bold text-white text-sm group-hover:text-amber-400 transition-colors">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <h4 className="font-bold text-zinc-100 text-xs group-hover:text-amber-400 transition-colors">
                     {preset.title}
                   </h4>
-                  <p className="text-xs text-slate-300 mt-1">
+                  <p className="text-xs text-zinc-400 font-medium">
                     {preset.questionText}
                   </p>
-                  <div className="mt-2 text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
-                    <span>ANSWER:</span>
-                    <span>{preset.correctAnswerText}</span>
+                  <div className="text-[11px] font-mono font-semibold text-emerald-400 flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    <span>Answer: {preset.correctAnswerText}</span>
                   </div>
                 </div>
 
                 <button
                   type="button"
-                  className="arcade-btn arcade-btn-secondary text-xs py-1.5 px-3 shrink-0 group-hover:arcade-btn-primary"
+                  className="ctrl-btn ctrl-btn-secondary text-xs py-1 px-2.5 shrink-0 group-hover:ctrl-btn-primary"
                 >
-                  LOAD
+                  Load
                 </button>
               </div>
             ))
@@ -83,12 +87,12 @@ export const PresetQuestionModal: React.FC<PresetQuestionModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="mt-4 pt-3 border-t border-white/10 text-right">
+        <div className="pt-2 border-t border-[#232838] text-right">
           <button
             onClick={onClose}
-            className="arcade-btn arcade-btn-secondary text-xs"
+            className="ctrl-btn ctrl-btn-secondary text-xs py-1.5 px-3"
           >
-            CANCEL
+            Cancel
           </button>
         </div>
 

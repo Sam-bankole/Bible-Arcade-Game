@@ -24,78 +24,87 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0c0e18]/98 backdrop-blur-xl border-b border-amber-500/25 px-2 sm:px-4 py-2 sm:py-3 shadow-lg shadow-black/60 max-w-full">
-      <div className="arcade-container flex items-center justify-between gap-1.5 sm:gap-3 max-w-full">
+    <header className="sticky top-0 z-50 bg-[#0e1015] border-b border-[#232838] px-2 sm:px-4 py-2 sm:py-2.5">
+      <div className={`${currentView === 'ADMIN' ? 'arcade-admin-container' : 'arcade-container'} flex items-center justify-between gap-2 sm:gap-4`}>
         
         {/* Brand / Logo */}
         <div 
           onClick={() => onNavigate('LANDING')}
-          className="flex items-center gap-1.5 sm:gap-2.5 cursor-pointer group flex-shrink-0"
+          className="flex items-center gap-2.5 cursor-pointer group shrink-0"
         >
-          <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/30 group-hover:scale-105 transition-transform flex-shrink-0">
-            <span className="text-xs sm:text-xl">📜</span>
+          <div className="w-8 h-8 rounded-lg bg-[#1a1e2b] border border-[#2e354a] flex items-center justify-center text-base group-hover:border-amber-500/50 transition-colors">
+            <span>📜</span>
           </div>
           <div>
-            <div className="font-arcade text-[11px] sm:text-base md:text-lg font-black tracking-wide gold-gradient-text leading-none">
-              BIBLE ARCADE
+            <div className="font-display font-bold text-sm sm:text-base text-zinc-100 tracking-wide leading-tight">
+              Letter Rush
             </div>
-            <div className="text-[8px] sm:text-[10px] uppercase tracking-widest text-amber-400 font-bold hidden sm:block mt-0.5">
+            <div className="text-[10px] uppercase tracking-wider text-green-500 font-semibold hidden sm:block">
               Live Competition
             </div>
           </div>
         </div>
 
         {/* Session Code & Controls */}
-        <div className="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           
           {sessionCode && (
-            <div className="flex items-center gap-1 px-1.5 sm:px-2.5 py-1 rounded-md sm:rounded-lg bg-amber-500/15 border border-amber-500/40">
-              <span className="text-[8px] sm:text-xs text-amber-400 font-bold uppercase">CODE:</span>
-              <span className="font-mono font-black text-amber-300 tracking-wider text-[10px] sm:text-sm">{sessionCode}</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#141720] border border-[#2e354a]">
+              <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider">CODE</span>
+              <span className="font-mono-tabular font-bold text-amber-400 tracking-wider text-xs sm:text-sm">
+                {sessionCode}
+              </span>
             </div>
           )}
 
           {/* Mode Context Badge */}
           {currentView === 'ADMIN' ? (
-            <div className="flex items-center gap-1 sm:gap-1.5">
-              <span className="arcade-badge badge-gold border-amber-500/50 text-amber-300 text-[9px] sm:text-xs py-1 px-1.5 sm:px-2">
-                <Shield className="w-3 h-3 text-amber-400" /> <span className="hidden sm:inline">ADMIN</span>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded bg-[#1e1c14] border border-amber-500/30 text-amber-400">
+                <Shield className="w-3 h-3" />
+                <span className="hidden sm:inline">CONSOLE</span>
               </span>
               <button
                 onClick={() => onNavigate('PROJECTOR')}
-                className="arcade-btn arcade-btn-purple text-[9px] sm:text-xs py-1 px-1.5 sm:px-2.5 flex items-center gap-1"
-                title="Launch Big Screen Projector Display"
+                className="ctrl-btn ctrl-btn-secondary text-xs py-1 px-2.5 flex items-center gap-1"
+                title="Launch Projector View"
               >
-                <Tv className="w-3 h-3" /> <span className="hidden sm:inline">STAGE</span>
+                <Tv className="w-3 h-3 text-zinc-400" />
+                <span className="hidden sm:inline">Stage</span>
               </button>
             </div>
           ) : (
-            <span className="arcade-badge badge-cyan text-[9px] sm:text-xs py-1 px-1.5 sm:px-2">
-              <Play className="w-3 h-3 text-cyan-400" /> <span className="hidden sm:inline">ARENA</span>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded bg-[#10121a] border border-[#2e354a] text-zinc-300">
+              <Play className="w-3 h-3 text-amber-400" />
+              <span className="hidden sm:inline">ARENA</span>
             </span>
           )}
 
-          {/* Mute Sound Button */}
+          {/* Sound Toggle */}
           <button
             onClick={toggleSound}
             title={soundEnabled ? 'Mute Sound FX' : 'Enable Sound FX'}
-            className="p-1 sm:p-2 rounded-lg bg-slate-800/90 hover:bg-slate-700/90 border border-white/15 text-slate-200 hover:text-amber-400 transition-colors flex-shrink-0"
+            className="w-8 h-8 rounded-lg bg-[#141720] hover:bg-[#1f2433] border border-[#2e354a] flex items-center justify-center text-zinc-300 hover:text-amber-400 transition-colors shrink-0"
           >
-            {soundEnabled ? <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" /> : <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />}
+            {soundEnabled ? (
+              <Volume2 className="w-4 h-4 text-zinc-200 shrink-0" />
+            ) : (
+              <VolumeX className="w-4 h-4 text-zinc-500 shrink-0" />
+            )}
           </button>
 
-          {/* Reset Session button for admin */}
+          {/* Reset Session */}
           {currentView === 'ADMIN' && onResetSession && (
             <button
               onClick={() => {
-                if (confirm('Are you sure you want to reset the current game session? All player scores will be cleared.')) {
+                if (confirm('Reset the current game session and clear scores?')) {
                   onResetSession();
                 }
               }}
               title="Reset Session"
-              className="p-1 sm:p-2 rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/40 text-red-400 transition-colors flex-shrink-0"
+              className="w-8 h-8 rounded-lg bg-[#141720] hover:bg-[#1f2433] border border-[#2e354a] flex items-center justify-center text-zinc-400 hover:text-rose-400 transition-colors shrink-0"
             >
-              <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <RefreshCw className="w-4 h-4 shrink-0" />
             </button>
           )}
 

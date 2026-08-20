@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { GameType, GameRound } from '../types/game';
 import { BIBLE_GAMES } from '../data/games';
 import { PresetQuestionModal } from './PresetQuestionModal';
-import { Clock, Play } from 'lucide-react';
+import { Play, BookOpen } from 'lucide-react';
 
 interface AdminQuestionFormProps {
   gameType: GameType;
@@ -67,7 +67,7 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
           letter: targetLetter,
           acceptedAnswers: [],
           questionText: `Letter: ${targetLetter} — Name a Bible character, book, or place starting with this letter.`,
-          correctAnswerText: `Manual Admin Evaluation (Answers starting with '${targetLetter}')`
+          correctAnswerText: `Letter '${targetLetter}'`
         };
         break;
       }
@@ -121,99 +121,103 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
   };
 
   return (
-    <div className="arcade-card arcade-card-gold p-3.5 sm:p-6 max-w-full overflow-x-hidden">
+    <div className="ctrl-card p-4 sm:p-5 space-y-4">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5 sm:pb-4 border-b border-white/10 mb-4 sm:mb-6">
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
-            {currentGameInfo.icon}
-          </div>
-          <div>
-            <h3 className="font-arcade text-sm sm:text-lg font-bold text-white tracking-wide leading-tight">
+      {/* Header: Mode Name & Preset Loader */}
+      <div className="flex items-center justify-between pb-3 border-b border-[#232838]">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">
               {currentGameInfo.title}
-            </h3>
-            <p className="text-[10px] sm:text-xs text-amber-400 font-semibold uppercase">
-              {currentGameInfo.subtitle}
-            </p>
+            </span>
+            <span className="text-xs text-zinc-500">•</span>
+            <span className="text-xs text-zinc-400 font-medium">
+              Round Setup
+            </span>
           </div>
         </div>
 
         <button
           type="button"
           onClick={() => setIsPresetModalOpen(true)}
-          className="arcade-btn arcade-btn-secondary text-[10px] sm:text-xs py-1.5 sm:py-2 px-2.5 sm:px-3 flex items-center gap-1.5 w-full sm:w-auto justify-center"
+          className="ctrl-btn ctrl-btn-secondary text-xs py-1 px-2.5 flex items-center gap-1.5"
         >
-          <span>LOAD PRESET QUESTION</span>
+          <BookOpen className="w-3.5 h-3.5 opacity-70" />
+          <span>Presets</span>
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         
         {/* GAME SPECIFIC INPUTS */}
 
         {/* 1. LETTER RUSH */}
         {gameType === 'LETTER_RUSH' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">
-                TARGET BIBLE LETTER
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Target Bible Letter
               </label>
-              <input
-                type="text"
-                maxLength={1}
-                value={letter}
-                onChange={(e) => setLetter(e.target.value.toUpperCase())}
-                className="arcade-input font-arcade text-3xl font-black text-center text-amber-300 w-24 uppercase"
-                required
-              />
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">
-              ℹ️ <strong>Manual Admin Evaluation Mode:</strong> Letter Rush has no fixed official answer. Contestants submit answers starting with letter <strong className="text-white uppercase font-bold font-mono text-sm">{letter || 'A'}</strong>, and the Admin manually evaluates submissions in the live queue to award points (+10, +7, +5) and declare official round winners!
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  maxLength={1}
+                  value={letter}
+                  onChange={(e) => setLetter(e.target.value.toUpperCase())}
+                  className="font-mono-tabular text-3xl font-black text-center text-amber-400 w-20 py-2 rounded-lg bg-[#0e1017] border border-[#2e354a] focus:border-amber-500 uppercase outline-none"
+                  required
+                />
+                <div className="text-xs text-zinc-400 leading-relaxed">
+                  Contestants race to name characters, books, or places starting with <strong className="text-amber-400 font-mono font-bold">"{letter || 'A'}"</strong>. Fastest arrival gets reviewed first.
+                </div>
+              </div>
             </div>
           </div>
         )}
 
         {/* 2. SCRIPTURE OR SPAM */}
         {gameType === 'SCRIPTURE_OR_SPAM' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">
-                QUOTE TO DISPLAY
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Quote to Display
               </label>
               <textarea
                 value={quote}
                 onChange={(e) => setQuote(e.target.value)}
                 rows={3}
-                className="arcade-input font-medium"
+                className="ctrl-input text-xs"
                 placeholder='Enter quote e.g., "I can do all things through Christ..."'
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                OFFICIAL CORRECT ANSWER
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Correct Classification
               </label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setIsScripture(true)}
-                  className={`arcade-choice-btn py-3 text-sm ${
-                    isScripture ? 'selected' : ''
+                  className={`py-2 text-xs font-bold rounded-lg border transition-colors ${
+                    isScripture 
+                      ? 'bg-zinc-200 text-zinc-900 border-zinc-200' 
+                      : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
                   }`}
                 >
-                  📜 SCRIPTURE
+                  Scripture
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsScripture(false)}
-                  className={`arcade-choice-btn py-3 text-sm ${
-                    !isScripture ? 'selected' : ''
+                  className={`py-2 text-xs font-bold rounded-lg border transition-colors ${
+                    !isScripture 
+                      ? 'bg-zinc-200 text-zinc-900 border-zinc-200' 
+                      : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
                   }`}
                 >
-                  🚫 SPAM QUOTE
+                  Spam Quote
                 </button>
               </div>
             </div>
@@ -222,43 +226,47 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
 
         {/* 3. OT OR NT */}
         {gameType === 'OT_OR_NT' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">
-                BIBLE NAME / EVENT / LOCATION / BOOK
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Bible Reference / Character / Event
               </label>
               <input
                 type="text"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                placeholder="e.g. David and Goliath, Pentecost, Noah's Ark"
-                className="arcade-input font-semibold text-lg"
+                placeholder="e.g. David and Goliath, Pentecost"
+                className="ctrl-input text-xs"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                OFFICIAL TESTAMENT
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Official Testament
               </label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setTestament('OT')}
-                  className={`arcade-choice-btn py-3 text-sm ${
-                    testament === 'OT' ? 'selected' : ''
+                  className={`py-2 text-xs font-bold rounded-lg border transition-colors ${
+                    testament === 'OT' 
+                      ? 'bg-zinc-200 text-zinc-900 border-zinc-200' 
+                      : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
                   }`}
                 >
-                  📜 OLD TESTAMENT
+                  Old Testament
                 </button>
                 <button
                   type="button"
                   onClick={() => setTestament('NT')}
-                  className={`arcade-choice-btn py-3 text-sm ${
-                    testament === 'NT' ? 'selected' : ''
+                  className={`py-2 text-xs font-bold rounded-lg border transition-colors ${
+                    testament === 'NT' 
+                      ? 'bg-zinc-200 text-zinc-900 border-zinc-200' 
+                      : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
                   }`}
                 >
-                  ✝️ NEW TESTAMENT
+                  New Testament
                 </button>
               </div>
             </div>
@@ -267,31 +275,31 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
 
         {/* 4. WHO AM I? */}
         {gameType === 'WHO_AM_I' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">
-                CHARACTER MYSTERY DESCRIPTION
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Character Clues
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
                 placeholder="I was a shepherd boy who defeated a giant..."
-                className="arcade-input"
+                className="ctrl-input text-xs"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                CORRECT CHARACTER NAME
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Correct Character Name
               </label>
               <input
                 type="text"
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
                 placeholder="e.g. David"
-                className="arcade-input font-bold"
+                className="ctrl-input text-xs"
                 required
               />
             </div>
@@ -300,68 +308,68 @@ export const AdminQuestionForm: React.FC<AdminQuestionFormProps> = ({
 
         {/* 5. BIBLE COUPLES */}
         {gameType === 'BIBLE_COUPLES' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">
-                GIVEN NAME (PROMPTED TO PLAYERS)
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Given Name (Prompt)
               </label>
               <input
                 type="text"
                 value={givenName}
                 onChange={(e) => setGivenName(e.target.value)}
                 placeholder="e.g. Adam"
-                className="arcade-input font-bold"
+                className="ctrl-input text-xs"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                CORRECT PARTNER NAME
+              <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                Correct Partner
               </label>
               <input
                 type="text"
                 value={partnerName}
                 onChange={(e) => setPartnerName(e.target.value)}
                 placeholder="e.g. Eve"
-                className="arcade-input font-bold"
+                className="ctrl-input text-xs"
                 required
               />
             </div>
           </div>
         )}
 
-        {/* TIMER CONFIGURATION */}
-        <div className="pt-4 border-t border-white/10">
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2 flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-cyan-400" />
-            COUNTDOWN TIMER DURATION
+        {/* TIMER DURATION SELECTOR */}
+        <div className="pt-3 border-t border-[#232838] space-y-2">
+          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">
+            Round Timer
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {[0, 10, 15, 20, 30, 60].map((seconds) => (
               <button
                 key={seconds}
                 type="button"
                 onClick={() => setTimerSeconds(seconds)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold font-arcade border transition-all ${
+                className={`px-3 py-1.5 rounded text-xs font-semibold font-mono-tabular border transition-colors ${
                   timerSeconds === seconds
-                    ? 'bg-cyan-500 text-black border-cyan-400 shadow-md shadow-cyan-500/20'
-                    : 'bg-slate-900 text-slate-300 border-white/10 hover:border-white/20'
+                    ? 'bg-zinc-200 text-zinc-950 font-bold border-zinc-200'
+                    : 'bg-[#10121a] text-zinc-400 border-[#2e354a] hover:text-zinc-200'
                 }`}
               >
-                {seconds === 0 ? 'NO TIMER' : `${seconds} SEC`}
+                {seconds === 0 ? 'Off' : `${seconds}s`}
               </button>
             ))}
           </div>
         </div>
 
-        {/* START ROUND BUTTON */}
+        {/* START ROUND ACTION BUTTON */}
         <div className="pt-2">
           <button
             type="submit"
-            className="arcade-btn arcade-btn-primary w-full py-4 text-base shadow-lg shadow-amber-500/30"
+            className="ctrl-btn ctrl-btn-primary w-full py-3 text-sm font-bold flex items-center justify-center gap-2"
           >
-            <Play className="w-5 h-5" /> START ROUND NOW
+            <Play className="w-4 h-4 fill-zinc-950" />
+            <span>Start Round</span>
           </button>
         </div>
 

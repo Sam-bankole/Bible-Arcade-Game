@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Player } from '../types/game';
-import { Trophy, Medal, Crown, Flame, Award, Search, Plus, Minus } from 'lucide-react';
+import { Plus, Minus, X } from 'lucide-react';
 
 interface LeaderboardViewProps {
   players: Record<string, Player>;
@@ -22,128 +22,134 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
   );
 
   return (
-    <div className="arcade-card arcade-card-gold p-3 sm:p-6 max-w-full overflow-x-hidden space-y-4">
+    <div className="ctrl-card p-4 sm:p-5 space-y-4">
       
-      {/* Title Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-white/10">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center flex-shrink-0">
-            <Trophy className="w-4 h-4 sm:w-6 sm:h-6 text-amber-400" />
-          </div>
-          <div>
-            <h3 className="font-arcade text-base sm:text-xl font-extrabold gold-gradient-text leading-tight">
-              SESSION LEADERBOARD
+      {/* Header Strip */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#232838]">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-100">
+              Tournament Standings
             </h3>
-            <p className="text-[10px] sm:text-xs text-slate-400 font-semibold uppercase">
-              CUMULATIVE EVENT STANDINGS
-            </p>
+            <span className="font-mono-tabular text-xs font-semibold px-2 py-0.5 rounded bg-[#1c202d] text-zinc-300 border border-[#2e354a]">
+              {sortedPlayers.length} {sortedPlayers.length === 1 ? 'player' : 'players'}
+            </span>
           </div>
+          <p className="text-xs text-zinc-400 mt-0.5">
+            Cumulative scores across all rounds in this session
+          </p>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-          <div className="relative min-w-[140px] sm:min-w-[180px]">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search player..."
-              className="arcade-input py-1 pl-8 pr-2 text-xs w-full bg-slate-950/80"
-            />
-          </div>
-
-          <div className="arcade-badge badge-gold flex items-center gap-1 text-[10px] sm:text-xs py-1 px-2.5 flex-shrink-0">
-            <Flame className="w-3 h-3 text-amber-400" />
-            <span>{sortedPlayers.length} PLAYERS</span>
-          </div>
+        {/* Search */}
+        <div className="relative min-w-[200px] w-full sm:w-auto">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search contestant..."
+            className="ctrl-input py-1 text-xs pl-3 pr-7 w-full"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
+      {/* Standings List */}
       {sortedPlayers.length === 0 ? (
-        <div className="text-center py-10 text-slate-400 bg-slate-950/30 rounded-xl border border-dashed border-white/10">
-          <Award className="w-8 h-8 sm:w-10 sm:h-10 mx-auto mb-2 opacity-40 text-amber-400" />
-          <p className="font-arcade text-xs sm:text-sm">NO PLAYERS JOINED YET</p>
-          <p className="text-[10px] sm:text-xs text-slate-500 mt-1">Players join using the 6-digit session entrance code.</p>
+        <div className="text-center py-12 text-zinc-500 bg-[#10121a] rounded-lg border border-dashed border-[#232838]">
+          <p className="text-sm font-medium text-zinc-300">No contestants registered</p>
+          <p className="text-xs text-zinc-500 mt-1">Players will be listed here as they join using the session code.</p>
         </div>
       ) : filteredPlayers.length === 0 ? (
-        <div className="text-center py-8 text-slate-400">
-          <p className="text-xs">No player found matching "{searchTerm}"</p>
+        <div className="text-center py-8 text-zinc-500 bg-[#10121a] rounded-lg">
+          <p className="text-xs">No contestant matching "{searchTerm}"</p>
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="space-y-1.5">
           {filteredPlayers.map((player) => {
             const rank = sortedPlayers.findIndex(p => p.id === player.id) + 1;
-            let rankBadge = null;
-            let cardBg = 'bg-slate-900/70 border-white/10';
-
-            if (rank === 1) {
-              cardBg = 'bg-gradient-to-r from-amber-500/20 via-slate-900 to-slate-900 border-amber-500/50 shadow-md shadow-amber-500/10';
-              rankBadge = <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 fill-amber-400" />;
-            } else if (rank === 2) {
-              cardBg = 'bg-gradient-to-r from-slate-300/10 via-slate-900 to-slate-900 border-slate-400/40';
-              rankBadge = <Medal className="w-4 h-4 sm:w-5 sm:h-5 text-slate-300" />;
-            } else if (rank === 3) {
-              cardBg = 'bg-gradient-to-r from-amber-700/10 via-slate-900 to-slate-900 border-amber-700/40';
-              rankBadge = <Medal className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />;
-            }
+            const formattedRank = String(rank).padStart(2, '0');
+            const isLeader = rank === 1;
 
             return (
               <div
                 key={player.id}
-                className={`p-2.5 sm:p-4 rounded-xl border transition-all flex items-center justify-between gap-2 sm:gap-4 max-w-full ${cardBg}`}
+                className={`p-2.5 sm:p-3 rounded-lg border transition-colors flex items-center justify-between gap-3 ${
+                  isLeader
+                    ? 'bg-[#18160f] border-amber-500/40 border-l-4 border-l-amber-500'
+                    : 'bg-[#10121a] border-[#232838] hover:border-[#2f364a]'
+                }`}
               >
-                {/* Rank & Name */}
-                <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1">
-                  <div className="w-7 sm:w-9 text-center font-arcade font-black text-xs sm:text-base text-slate-300 flex items-center justify-center flex-shrink-0">
-                    {rankBadge || `#${rank}`}
+                {/* Left: Rank & Player info */}
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  
+                  {/* Rank Number */}
+                  <div className="w-7 text-center shrink-0">
+                    <span className={`font-mono-tabular text-sm sm:text-base font-bold ${
+                      isLeader ? 'text-amber-400 font-black' : 'text-zinc-500'
+                    }`}>
+                      #{formattedRank}
+                    </span>
                   </div>
+
+                  {/* Player Name + Username */}
                   <div className="min-w-0 flex-1">
-                    <h4 className="font-bold text-white text-xs sm:text-base font-arcade tracking-wide flex items-center gap-1.5 flex-wrap truncate">
-                      <span className="truncate">{player.name}</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-zinc-100 text-sm truncate">
+                        {player.name}
+                      </span>
                       {player.username && (
-                        <span className="text-[10px] text-amber-300 font-mono bg-amber-500/15 px-1.5 py-0.2 rounded border border-amber-500/30">
+                        <span className="font-mono-tabular text-xs text-zinc-400 font-medium">
                           @{player.username}
                         </span>
                       )}
-                      {rank === 1 && (
-                        <span className="text-[8px] sm:text-[10px] bg-amber-400/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.5 rounded-full font-sans font-semibold uppercase flex-shrink-0">
-                          LEADER
+                      {isLeader && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-500 text-zinc-950">
+                          Leader
                         </span>
                       )}
-                    </h4>
-                    <span className="text-[9px] sm:text-[11px] text-slate-400 font-mono block truncate">
-                      ID: {player.id.slice(-4).toUpperCase()}
+                    </div>
+                    <span className="font-mono-tabular text-[10px] text-zinc-600 block">
+                      ID: {player.id.slice(-6).toUpperCase()}
                     </span>
                   </div>
                 </div>
 
-                {/* Score & Adjustments */}
-                <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                {/* Right: Score + Manual score overrides */}
+                <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
-                    <span className="font-arcade text-base sm:text-2xl font-black gold-gradient-text block leading-none">
+                    <span className={`font-mono-tabular text-lg sm:text-xl font-bold block leading-none ${
+                      isLeader ? 'text-amber-400 font-black' : 'text-zinc-100'
+                    }`}>
                       {player.score}
                     </span>
-                    <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block mt-0.5">
+                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest block mt-0.5">
                       PTS
                     </span>
                   </div>
 
-                  {/* Admin manual score edit buttons */}
+                  {/* Admin score correction */}
                   {isAdmin && onUpdateScore && (
-                    <div className="flex flex-col gap-1 border-l border-white/10 pl-2 sm:pl-3">
+                    <div className="flex items-center gap-1 border-l border-[#232838] pl-2.5">
                       <button
                         onClick={() => onUpdateScore(player.id, player.score + 1)}
-                        className="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold rounded bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500 hover:text-black transition-colors flex items-center gap-0.5"
-                        title="Add +1 pt"
+                        className="ctrl-btn ctrl-btn-secondary text-xs p-1 h-6 w-6 flex items-center justify-center text-zinc-300 hover:text-emerald-400"
+                        title="Add +1 point"
                       >
-                        <Plus className="w-2.5 h-2.5" /> 1
+                        <Plus className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => onUpdateScore(player.id, Math.max(0, player.score - 1))}
-                        className="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold rounded bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center gap-0.5"
-                        title="Deduct -1 pt"
+                        className="ctrl-btn ctrl-btn-secondary text-xs p-1 h-6 w-6 flex items-center justify-center text-zinc-300 hover:text-rose-400"
+                        title="Deduct -1 point"
                       >
-                        <Minus className="w-2.5 h-2.5" /> 1
+                        <Minus className="w-3 h-3" />
                       </button>
                     </div>
                   )}
