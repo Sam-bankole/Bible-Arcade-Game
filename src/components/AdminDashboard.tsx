@@ -6,14 +6,14 @@ import { AnswerQueue } from './AnswerQueue';
 import { LeaderboardView } from './LeaderboardView';
 import { 
   Lock, Unlock, Play, XCircle, Zap, Award, ArrowRight, 
-  Copy, Check, Plus, Layers, Tv, RefreshCw, LogOut, Hash, Globe, X,
+  Plus, Layers, LogOut, Hash, Globe, X, Trash2,
   Users, Timer, ChevronRight
 } from 'lucide-react';
 import { syncEngine, generate6DigitCode } from '../utils/syncEngine';
 import { formatElapsedRoundTime } from '../utils/timestamp';
 
 interface AdminDashboardProps {
-  session: GameSession;
+  session: GameSession | null;
   onCreateNewSession?: (customCode?: string) => void;
   onSwitchSession?: (sessionCode: string) => void;
   onEndSession?: () => void;
@@ -44,8 +44,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onEvaluateAnswer,
   onToggleLeaderboard,
   onUpdatePlayerScore,
-  onResetSession,
-  onOpenProjector
 }) => {
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => syncEngine.isAdminAuthenticated());
@@ -60,7 +58,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   useEffect(() => {
     setKnownSessions(syncEngine.getAdminSessions());
-  }, [session.code, isSessionModalOpen]);
+  }, [session?.code, isSessionModalOpen]);
 
   const handlePasswordAuth = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +76,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const handleCopyLink = () => {
+    if (!session) return;
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const joinUrl = `${origin}/play?code=${session.code}`;
     navigator.clipboard.writeText(joinUrl);
@@ -103,6 +102,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       onUpdateSessionCode(code);
     }
     setIsSessionModalOpen(false);
+  };
+
+  const handleDeleteSession = (e: React.MouseEvent, code: string) => {
+    e.stopPropagation();
+    if (confirm(`Delete room session "${code}"?`)) {
+      syncEngine.deleteSession(code);
+      setKnownSessions(syncEngine.getAdminSessions());
+      if (session && session.code === code && onEndSession) {
+        onEndSession();
+      }
+    }
+  };
+
+  const handleClearAllOld = () => {
+    if (confirm('Clear all old inactive sessions from memory?')) {
+      syncEngine.clearAllOldSessions(session?.code);
+      setKnownSessions(syncEngine.getAdminSessions());
+    }
   };
 
   // ─── AUTH GATE ───────────────────────────────────────────────
@@ -154,6 +171,91 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <Unlock className="w-3.5 h-3.5" /> UNLOCK STAGE CONSOLE
             </button>
           </form>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── NO ACTIVE SESSION GATE ─────────────────────────────────────
+  if (!session) {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center p-4">
+        <div className="tactics-card p-6 sm:p-8 max-w-md w-full space-y-5 border border-[#272d42] text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#ccff00]/10 border-2 border-[#ccff00]/30 flex items-center justify-center text-[#ccff00] mx-auto shadow-[0_0_20px_rgba(204,255,0,0.2)]">
+            <Plus className="w-7 h-7" />
+          </div>
+          <div className="space-y-1">
+            <h2 className="font-display text-xl font-bold text-white">
+              Create Game Session
+            </h2>
+            <p className="text-xs text-slate-400">
+              No active game session running. Generate a room code for contestants to join.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2 text-left">
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
+                Custom Session Code (Optional)
+              </label>
+              <input
+                type="text"
+                maxLength={6}
+                value={newCodeInput}
+                onChange={(e) => setNewCodeInput(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                placeholder="Leave blank for auto-code (e.g. 4L27B1)"
+                className="tactics-input text-sm font-mono font-bold uppercase text-center py-2.5"
+              />
+            </div>
+
+            <button
+              onClick={handleCreateNewSession}
+              className="tactics-btn tactics-btn-primary w-full py-3.5 text-sm font-black flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>CREATE GAME SESSION</span>
+            </button>
+          </div>
+
+          {knownSessions.length > 0 && (
+            <div className="pt-3 border-t border-[#1c2130] space-y-2 text-left">
+              <div className="flex items-center justify-between">
+                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400">
+                  Or Resume Saved Session
+                </label>
+                <button
+                  onClick={handleClearAllOld}
+                  className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold"
+                >
+                  Clear All
+                </button>
+              </div>
+              <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
+                {knownSessions.map((code) => (
+                  <div
+                    key={code}
+                    onClick={() => handleSwitchSession(code)}
+                    className="p-2.5 rounded-lg text-xs font-mono font-black bg-[#0c0e15] hover:bg-[#171b26] text-slate-300 hover:text-[#ccff00] border border-[#1c2130] flex items-center justify-between cursor-pointer transition-colors"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Hash className="w-3.5 h-3.5 opacity-50" />
+                      <span>{code}</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-400">Resume →</span>
+                      <button
+                        onClick={(e) => handleDeleteSession(e, code)}
+                        className="text-slate-500 hover:text-rose-400 p-1"
+                        title="Delete Session"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -646,15 +748,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </p>
             </div>
 
-            {/* Switch to Active Sessions */}
+            {/* Switch or Delete Active Sessions */}
             {knownSessions.length > 0 && (
               <div className="space-y-1.5">
-                <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400">
-                  Active Rooms
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400">
+                    Active Rooms ({knownSessions.length})
+                  </label>
+                  <button
+                    onClick={handleClearAllOld}
+                    className="text-[10px] text-rose-400 hover:text-rose-300 font-semibold cursor-pointer"
+                  >
+                    Clear Old
+                  </button>
+                </div>
                 <div className="max-h-40 overflow-y-auto space-y-1 pr-1">
                   {knownSessions.map((code) => {
-                    const isCurrent = code === session.code;
+                    const isCurrent = session && code === session.code;
                     return (
                       <div
                         key={code}
@@ -669,15 +779,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <Hash className="w-3.5 h-3.5 opacity-50" />
                           <span>{code}</span>
                         </span>
-                        {isCurrent ? (
-                          <span className="text-[9px] uppercase px-2 py-0.5 rounded bg-[#ccff00] text-black font-black">
-                            Current
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-slate-400 hover:text-[#ccff00]">
-                            Switch →
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {isCurrent ? (
+                            <span className="text-[9px] uppercase px-2 py-0.5 rounded bg-[#ccff00] text-black font-black">
+                              Current
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 hover:text-[#ccff00]">
+                              Switch →
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteSession(e, code)}
+                            className="text-slate-500 hover:text-rose-400 p-1 cursor-pointer transition-colors"
+                            title={`Delete room ${code}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

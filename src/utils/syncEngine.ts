@@ -127,6 +127,36 @@ export class SyncEngine {
     localStorage.setItem(KNOWN_SESSIONS_KEY, JSON.stringify(filtered));
   }
 
+  public deleteSession(code: string): void {
+    if (typeof window === 'undefined') return;
+    const clean = code.trim().toUpperCase();
+    if (!clean) return;
+    localStorage.removeItem(`${STORAGE_PREFIX}${clean}`);
+    if (localStorage.getItem(`${STORAGE_PREFIX}LATEST_CODE`) === clean) {
+      localStorage.removeItem(`${STORAGE_PREFIX}LATEST_CODE`);
+    }
+    this.removeAdminSession(clean);
+
+    try {
+      import('./firebase').then(({ db, ref, set }) => {
+        set(ref(db, `arcade_sessions/${clean}`), null);
+      });
+    } catch (err) {
+      console.warn('[SyncEngine] Firebase delete error:', err);
+    }
+  }
+
+  public clearAllOldSessions(keepCode?: string): void {
+    if (typeof window === 'undefined') return;
+    const keepClean = keepCode ? keepCode.trim().toUpperCase() : '';
+    const sessions = this.getAdminSessions();
+    sessions.forEach(code => {
+      if (code !== keepClean) {
+        this.deleteSession(code);
+      }
+    });
+  }
+
   public connectCloudRelay(sessionCode: string) {
     if (typeof window === 'undefined') return;
     const cleanCode = sessionCode.trim().toUpperCase();
@@ -200,6 +230,9 @@ export class SyncEngine {
         session: cleanSession
       });
     }
+
+    // 3. Notify all local components & subscribers immediately
+    this.notifyListeners(cleanSession);
   }
 
   /**

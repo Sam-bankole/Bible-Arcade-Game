@@ -321,27 +321,32 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 13px 18px;
-  background-color: var(--neon-lime);
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #ccff00 0%, #b3e600 100%);
   color: #060902;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-family: var(--font-display);
-  font-size: 0.9375rem;
-  font-weight: 800;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 4px 20px rgba(204, 255, 0, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 .su-btn-primary:hover:not(:disabled) {
-  background-color: var(--neon-lime-hover);
-  box-shadow: 0 0 20px rgba(204, 255, 0, 0.3);
+  background: linear-gradient(135deg, #d4ff1a 0%, #b8e600 100%);
+  box-shadow: 0 0 28px rgba(204, 255, 0, 0.55);
+  transform: translateY(-1px);
 }
-.su-btn-primary:active:not(:disabled) { transform: translateY(1px); }
+.su-btn-primary:active:not(:disabled) { transform: translateY(1px) scale(0.98); }
 .su-btn-primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .su-footer-note {

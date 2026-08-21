@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import type { GameSession, Player, AnswerItem } from '../types/game';
 import { BIBLE_GAMES } from '../data/games';
 import {
-  ArrowLeft,
   Clock,
   Send,
   CheckCircle2,
@@ -38,39 +37,18 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
   onJoin,
   onSubmitAnswer
 }) => {
-  const [inputCode, setInputCode] = useState(session?.code || '');
+  const [inputCode, setInputCode] = useState(() => {
+    if (session?.code) return session.code;
+    if (typeof window !== 'undefined') {
+      const codeParam = new URLSearchParams(window.location.search).get('code');
+      if (codeParam) return codeParam.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    }
+    return '';
+  });
   const [answerText, setAnswerText] = useState('');
 
-  // ── 1. NO SESSION ──────────────────────────────────────────────────────
-  if (!session) {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-sm bg-[#0e131f] border border-[#1d2538] rounded-2xl p-6 text-center space-y-4 shadow-xl">
-          <div className="w-12 h-12 rounded-xl bg-[#171e2e] border border-[#27324b] flex items-center justify-center text-slate-400 mx-auto">
-            <BookOpen className="w-6 h-6" />
-          </div>
-          <div className="space-y-1">
-            <h2 className="font-display text-lg font-bold text-white">
-              No Active Session
-            </h2>
-            <p className="text-xs text-slate-400">
-              You haven't joined a game room yet. Enter a code to join.
-            </p>
-          </div>
-          <button
-            id="btn-go-home"
-            onClick={() => window.history.back()}
-            className="w-full py-3 px-4 bg-[#182032] hover:bg-[#202b44] border border-[#2b3956] text-slate-200 font-semibold text-xs rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" /> Go back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ── 2. JOIN SCREEN (session exists but player hasn't joined) ───────────
-  if (!currentPlayer) {
+  // ── 1. JOIN SCREEN (If no session or player hasn't joined session yet) ────
+  if (!session || !currentPlayer) {
     const handleJoinSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       const code = inputCode.trim().toUpperCase();
@@ -80,19 +58,26 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
 
     return (
       <div className="min-h-[70vh] flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-sm bg-[#0e131f] border-2 border-[#ccff00]/30 rounded-2xl p-6 space-y-4 shadow-xl">
-          <div className="text-center space-y-1">
-            <h2 className="font-display text-xl font-bold text-white">
-              Join Live Session
+        <div className="w-full max-w-md bg-[#0f1422] border-2 border-[#ccff00]/35 hover:border-[#ccff00]/60 rounded-2xl p-6 sm:p-8 space-y-5 shadow-2xl relative overflow-hidden transition-all duration-300">
+          
+          {/* Subtle top ambient accent */}
+          <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-32 bg-[#ccff00]/10 rounded-full blur-2xl pointer-events-none" />
+
+          <div className="relative z-10 text-center space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 text-[10px] font-mono font-bold text-[#ccff00] uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-[#ccff00]" /> Live Arena
+            </div>
+            <h2 className="font-display text-2xl font-extrabold text-white tracking-wide">
+              JOIN LIVE SESSION
             </h2>
-            <p className="text-xs text-slate-400">
-              Enter room code to join the competition
+            <p className="text-xs text-slate-300">
+              Enter the 6-character room code to enter the competition
             </p>
           </div>
 
-          <form onSubmit={handleJoinSubmit} className="space-y-3.5" noValidate>
+          <form onSubmit={handleJoinSubmit} className="relative z-10 space-y-4" noValidate>
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">
                 SESSION CODE
               </label>
               <input
@@ -101,18 +86,21 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
                 maxLength={6}
                 value={inputCode}
                 onChange={e => setInputCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-                placeholder="e.g. 4L27B1"
-                className="w-full bg-[#080b12] border-2 border-[#263148] focus:border-[#ccff00] rounded-xl py-3 px-4 font-mono text-center text-xl font-bold tracking-[0.2em] text-white uppercase outline-none"
+                placeholder="ENTER CODE"
+                className="w-full bg-[#07090f] border-2 border-[#263148] focus:border-[#ccff00] focus:shadow-[0_0_20px_rgba(204,255,0,0.25)] rounded-xl py-3.5 px-4 font-mono text-center text-2xl font-extrabold tracking-[0.25em] text-white uppercase placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-sm outline-none transition-all duration-200"
                 autoComplete="off"
                 autoCapitalize="characters"
+                autoFocus
                 required
               />
             </div>
+
             <button
               type="submit"
-              className="w-full py-3.5 bg-[#ccff00] hover:bg-[#b8e600] active:scale-[0.98] text-[#060902] font-display font-extrabold text-sm rounded-xl transition-all cursor-pointer"
+              className="group w-full py-4 px-5 bg-gradient-to-r from-[#ccff00] to-[#b3e600] hover:from-[#d4ff1a] hover:to-[#b8e600] active:scale-[0.98] text-[#060902] font-display font-black text-base tracking-wider uppercase rounded-xl shadow-[0_4px_25px_rgba(204,255,0,0.3)] hover:shadow-[0_0_32px_rgba(204,255,0,0.6)] flex items-center justify-center gap-2.5 cursor-pointer transition-all duration-200"
             >
-              Enter Game Room
+              <span>ENTER GAME ROOM</span>
+              <Send className="w-4 h-4 stroke-[2.5] group-hover:translate-x-1 transition-transform duration-200" />
             </button>
           </form>
         </div>

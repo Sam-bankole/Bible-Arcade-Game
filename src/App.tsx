@@ -52,18 +52,26 @@ export function App() {
     }
   }, [session?.code]);
 
-  // Subscribe to real-time session updates
+  // Subscribe to real-time session updates (Firebase Cloud + BroadcastChannel + Local)
   useEffect(() => {
     const unsubscribe = syncEngine.subscribe((updatedSession) => {
-      if (updatedSession && session && updatedSession.code === session.code) {
-        setSession(updatedSession);
-        if (currentPlayer && updatedSession.players[currentPlayer.id]) {
-          setCurrentPlayer(updatedSession.players[currentPlayer.id]);
+      if (!updatedSession) return;
+      setSession((prevSession) => {
+        if (!prevSession || prevSession.code === updatedSession.code) {
+          return updatedSession;
         }
-      }
+        return prevSession;
+      });
+
+      setCurrentPlayer((prevPlayer) => {
+        if (prevPlayer && updatedSession.players[prevPlayer.id]) {
+          return updatedSession.players[prevPlayer.id];
+        }
+        return prevPlayer;
+      });
     });
     return () => unsubscribe();
-  }, [session?.code, currentPlayer]);
+  }, []);
 
   // Timer tick for live rounds
   useEffect(() => {
@@ -279,7 +287,7 @@ export function App() {
 
         {currentView === 'ADMIN' && (
           <AdminDashboard
-            session={session || createNewSession()}
+            session={session}
             onCreateNewSession={handleCreateNewSession}
             onSwitchSession={handleSwitchSession}
             onEndSession={handleEndSession}

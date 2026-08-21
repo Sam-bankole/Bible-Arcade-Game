@@ -40,7 +40,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onSignOut,
   sessionError: externalError = ''
 }) => {
-  const [joinCode, setJoinCode] = useState('');
+  const [joinCode, setJoinCode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const codeParam = new URLSearchParams(window.location.search).get('code');
+      if (codeParam) return codeParam.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    }
+    return '';
+  });
   const [localError, setLocalError] = useState('');
 
   const displayError = externalError || localError;
@@ -89,7 +95,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <button
           id="btn-sign-out"
           onClick={handleSignOut}
-          className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-rose-400 bg-[#161c2c] hover:bg-[#20273c] border border-[#242e46] px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
+          className="flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-rose-400 bg-[#161c2c] hover:bg-[#20273c] border border-[#242e46] px-2.5 py-1.5 rounded-lg transition-colors shrink-0 cursor-pointer"
           title="Sign out or switch identity"
         >
           <LogOut className="w-3.5 h-3.5" />
@@ -98,26 +104,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </div>
 
       {/* ── 2. PRIMARY JOIN SESSION CARD (IMMEDIATELY IN VIEW) ───── */}
-      <div className="bg-[#0f1422] border-2 border-[#ccff00]/30 hover:border-[#ccff00]/50 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden transition-colors">
+      <div className="bg-[#0f1422] border-2 border-[#ccff00]/35 hover:border-[#ccff00]/60 rounded-2xl p-5 sm:p-7 shadow-2xl relative overflow-hidden transition-all duration-300">
         
         {/* Subtle top ambient accent */}
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 h-32 bg-[#ccff00]/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-36 bg-[#ccff00]/12 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 space-y-3.5 sm:space-y-4">
+        <div className="relative z-10 space-y-4">
           
-          <div className="text-center space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/25 text-[10px] font-mono font-bold text-[#ccff00] uppercase tracking-wider">
-              <Sparkles className="w-3 h-3" /> Live Multiplayer
+          <div className="text-center space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 text-[10px] font-mono font-bold text-[#ccff00] uppercase tracking-wider">
+              <Sparkles className="w-3 h-3 text-[#ccff00]" /> Live Multiplayer
             </div>
-            <h2 className="font-display text-xl sm:text-2xl font-bold text-white tracking-wide">
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-white tracking-wide">
               ENTER ARENA
             </h2>
-            <p className="text-xs text-slate-300">
-              Type the 6-character code shown on the host's screen
+            <p className="text-xs sm:text-sm text-slate-300">
+              Type the 6-character code shared by your host
             </p>
           </div>
 
-          <form onSubmit={handleJoin} className="space-y-3" noValidate>
+          <form onSubmit={handleJoin} className="space-y-3.5" noValidate>
             
             {/* Session Code Input */}
             <div>
@@ -132,8 +138,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''));
                     setLocalError('');
                   }}
-                  placeholder="e.g. 4L27B1"
-                  className="w-full bg-[#080b12] border-2 border-[#263148] focus:border-[#ccff00] rounded-xl py-3 sm:py-3.5 px-4 font-mono text-center text-xl sm:text-2xl font-bold tracking-[0.25em] text-white uppercase placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-base outline-none transition-all"
+                  placeholder="ENTER ROOM CODE"
+                  className="w-full bg-[#07090f] border-2 border-[#263148] focus:border-[#ccff00] focus:shadow-[0_0_20px_rgba(204,255,0,0.25)] rounded-xl py-3.5 sm:py-4 px-4 font-mono text-center text-2xl sm:text-3xl font-extrabold tracking-[0.25em] text-white uppercase placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-sm outline-none transition-all duration-200"
                   autoComplete="off"
                   autoCapitalize="characters"
                   spellCheck={false}
@@ -144,21 +150,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
               {/* Error display */}
               {displayError && (
-                <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2 text-xs font-semibold text-rose-300 mt-2">
+                <div className="flex items-center gap-2 bg-rose-500/15 border border-rose-500/40 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-rose-300 mt-2.5 animate-fadeIn">
                   <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
                   <span>{displayError}</span>
                 </div>
               )}
             </div>
 
-            {/* Big Join CTA Button */}
+            {/* Big Premium Join CTA Button */}
             <button
               id="btn-join-game"
               type="submit"
-              className="w-full py-3.5 sm:py-4 px-4 bg-[#ccff00] hover:bg-[#b8e600] active:scale-[0.98] text-[#060902] font-display font-extrabold text-sm sm:text-base tracking-wide rounded-xl shadow-lg shadow-[#ccff00]/20 flex items-center justify-center gap-2 cursor-pointer transition-all"
+              className="group w-full py-4 px-5 bg-gradient-to-r from-[#ccff00] to-[#b3e600] hover:from-[#d4ff1a] hover:to-[#b8e600] active:scale-[0.98] text-[#060902] font-display font-black text-base sm:text-lg tracking-wider uppercase rounded-xl shadow-[0_4px_25px_rgba(204,255,0,0.3)] hover:shadow-[0_0_32px_rgba(204,255,0,0.6)] flex items-center justify-center gap-2.5 cursor-pointer transition-all duration-200"
             >
               <span>JOIN GAME NOW</span>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
+              <ArrowRight className="w-5 h-5 stroke-[3] group-hover:translate-x-1 transition-transform duration-200" />
             </button>
           </form>
 
