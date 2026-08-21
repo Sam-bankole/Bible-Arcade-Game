@@ -28,6 +28,7 @@ interface AdminDashboardProps {
   onUpdatePlayerScore: (playerId: string, newScore: number) => void;
   onResetSession: () => void;
   onOpenProjector: () => void;
+  sessionError?: string;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -44,6 +45,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onEvaluateAnswer,
   onToggleLeaderboard,
   onUpdatePlayerScore,
+  sessionError: externalSessionError = ''
 }) => {
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => syncEngine.isAdminAuthenticated());
@@ -215,6 +217,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <Plus className="w-4 h-4" />
               <span>CREATE GAME SESSION</span>
             </button>
+
+            {externalSessionError && (
+              <div className="flex items-start gap-2 bg-rose-500/15 border border-rose-500/40 rounded-xl px-3 py-2.5 text-xs font-semibold text-rose-300 mt-1">
+                <span className="shrink-0 text-rose-400 mt-0.5">⚠️</span>
+                <span>{externalSessionError.replace('⚠️ ', '')}</span>
+              </div>
+            )}
           </div>
 
           {knownSessions.length > 0 && (

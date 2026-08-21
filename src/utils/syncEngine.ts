@@ -46,7 +46,7 @@ export function normalizeSession(raw: any): GameSession {
   if (!raw || typeof raw !== 'object') {
     return createNewSession();
   }
-  return {
+  const session: GameSession = {
     ...raw,
     id: raw.id || `sess_${Date.now()}`,
     code: (raw.code || generate6DigitCode()).toUpperCase(),
@@ -60,8 +60,27 @@ export function normalizeSession(raw: any): GameSession {
     createdAt: raw.createdAt || Date.now(),
     adminPin: raw.adminPin || DEFAULT_ADMIN_PASSWORD,
     isEnded: !!raw.isEnded,
-    endedAt: raw.endedAt || undefined
   };
+  // Only include endedAt if it has a real value — Firebase rejects undefined
+  if (raw.endedAt) session.endedAt = raw.endedAt;
+  return session;
+}
+
+/**
+ * Remove all undefined values recursively — Firebase Realtime DB rejects undefined.
+ */
+function stripUndefined(obj: any): any {
+  if (obj === null || obj === undefined) return null;
+  if (typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(stripUndefined);
+  const clean: Record<string, any> = {};
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (val !== undefined) {
+      clean[key] = stripUndefined(val);
+    }
+  }
+  return clean;
 }
 
 export class SyncEngine {
@@ -205,24 +224,27 @@ export class SyncEngine {
     this.listeners.forEach(cb => cb(cleanSession));
   }
 
-  public saveAndBroadcastSession(session: GameSession) {
-    if (typeof window === 'undefined') return;
-    // Sanitize session object to remove undefined properties for Firebase set()
-    const cleanSession: GameSession = normalizeSession(JSON.parse(JSON.stringify(session)));
+  public async saveAndBroadcastSession(session: GameSession): Promise<boolean> {
+    if (typeof window === 'undefined') return false;
+    // Strip undefined values — Firebase Realtime DB rejects them
+    const normalized: GameSession = normalizeSession(session);
+    const cleanSession = stripUndefined(normalized) as GameSession;
 
     const key = `${STORAGE_PREFIX}${cleanSession.code}`;
     localStorage.setItem(key, JSON.stringify(cleanSession));
     localStorage.setItem(`${STORAGE_PREFIX}LATEST_CODE`, cleanSession.code);
     this.addAdminSession(cleanSession.code);
 
-    // 1. Firebase Realtime Database Cloud Sync
+    // 1. Firebase Realtime Database Cloud Sync — await so we know if it worked
+    console.log('[SyncEngine] Writing session to Firebase at path:', `arcade_sessions/${cleanSession.code}`);
+    let firebaseSuccess = false;
     try {
       const sessionRef = ref(db, `arcade_sessions/${cleanSession.code}`);
-      set(sessionRef, cleanSession).catch(err => {
-        console.error('[SyncEngine] Firebase Realtime DB async set error:', err);
-      });
+      await set(sessionRef, cleanSession);
+      firebaseSuccess = true;
+      console.log('[SyncEngine] Firebase WRITE SUCCESS for:', cleanSession.code);
     } catch (err) {
-      console.error('[SyncEngine] Firebase save error:', err);
+      console.error('[SyncEngine] Firebase WRITE FAILED for:', cleanSession.code, err);
     }
 
     // 2. Local Same-Device BroadcastChannel
@@ -235,6 +257,7 @@ export class SyncEngine {
 
     // 3. Notify all local components & subscribers immediately
     this.notifyListeners(cleanSession);
+    return firebaseSuccess;
   }
 
   /**
@@ -245,19 +268,25 @@ export class SyncEngine {
     const cleanCode = code.trim().toUpperCase();
     if (!cleanCode) return null;
 
+    console.log('[SyncEngine] lookupSession START for:', cleanCode);
+
     // Immediately connect cloud relay to listen to this room on Firebase
     this.connectCloudRelay(cleanCode);
 
     // 1. Check local cache
     const cached = this.getSession(cleanCode);
+    console.log('[SyncEngine] Local cache:', cached ? `FOUND isEnded=${cached.isEnded}` : 'EMPTY');
     if (cached && !cached.isEnded) return cached;
 
     // 2. Query Firebase Realtime Database
     try {
       const sessionRef = ref(db, `arcade_sessions/${cleanCode}`);
+      console.log('[SyncEngine] Querying Firebase for:', cleanCode);
       const snap = await get(sessionRef);
+      console.log('[SyncEngine] Firebase get() exists:', snap && snap.exists(), '| raw val:', snap?.val());
       if (snap && snap.exists()) {
         const session = normalizeSession(snap.val());
+        console.log('[SyncEngine] Normalized session isEnded:', session.isEnded, 'code:', session.code);
         if (!session.isEnded) {
           const key = `${STORAGE_PREFIX}${cleanCode}`;
           localStorage.setItem(key, JSON.stringify(session));
@@ -270,8 +299,10 @@ export class SyncEngine {
       if (cacheCheck && !cacheCheck.isEnded) return cacheCheck;
 
       // Retry once after 600ms in case host write is still in transit
+      console.log('[SyncEngine] Not found — retrying in 600ms for:', cleanCode);
       await new Promise(resolve => setTimeout(resolve, 600));
       const retrySnap = await get(sessionRef);
+      console.log('[SyncEngine] Retry get() exists:', retrySnap && retrySnap.exists());
       if (retrySnap && retrySnap.exists()) {
         const session = normalizeSession(retrySnap.val());
         if (!session.isEnded) {
@@ -285,9 +316,10 @@ export class SyncEngine {
       const finalCache = this.getSession(cleanCode);
       if (finalCache && !finalCache.isEnded) return finalCache;
 
+      console.warn('[SyncEngine] lookupSession FAILED — no session found for:', cleanCode);
       return null;
     } catch (err) {
-      console.error('[SyncEngine] lookupSession error:', err);
+      console.error('[SyncEngine] lookupSession threw error:', err);
       return this.getSession(cleanCode);
     }
   }

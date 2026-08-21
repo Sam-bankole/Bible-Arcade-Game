@@ -124,15 +124,35 @@ export function App() {
   // ── Player join handler — looks up session; never creates one ────────────────
 
   const handleJoinPlayer = async (code: string) => {
-    if (!currentIdentity) return;
-    setSessionError('');
+    console.log('[JOIN] handleJoinPlayer called with code:', code);
+    console.log('[JOIN] currentIdentity:', currentIdentity);
 
-    const found = await syncEngine.lookupSession(code.toUpperCase());
-    if (!found) {
-      setSessionError(`No active game found for code "${code}". Check the code and try again.`);
+    if (!currentIdentity) {
+      console.error('[JOIN] ERROR: No currentIdentity. Cannot join.');
+      setSessionError('Please set up your player profile first.');
       return;
     }
 
+    setSessionError('');
+    const cleanCode = code.trim().toUpperCase();
+    console.log('[JOIN] Looking up session for code:', cleanCode);
+
+    let found: GameSession | null = null;
+    try {
+      found = await syncEngine.lookupSession(cleanCode);
+    } catch (err) {
+      console.error('[JOIN] lookupSession threw an error:', err);
+    }
+
+    console.log('[JOIN] lookupSession result:', found);
+
+    if (!found) {
+      console.warn('[JOIN] No session found for code:', cleanCode);
+      setSessionError(`No active game found for code "${cleanCode}". Check the code and try again.`);
+      return;
+    }
+
+    console.log('[JOIN] Session found! Joining as player...');
     const { session: updatedSess, player } = syncEngine.joinPlayer(
       found,
       currentIdentity.uid,
@@ -142,6 +162,7 @@ export function App() {
     setSession(updatedSess);
     setCurrentPlayer(player);
     navigateTo('PLAYER');
+    console.log('[JOIN] Successfully joined session:', updatedSess.code, 'as player:', player.name);
   };
 
   // ── Answer submission ────────────────────────────────────────────────────────
@@ -212,23 +233,32 @@ export function App() {
     setSession(updated);
   };
 
-  const handleCreateNewSession = (customCode?: string) => {
+  const handleCreateNewSession = async (customCode?: string) => {
+    setSessionError('');
     const newSession = createNewSession(customCode);
-    syncEngine.saveAndBroadcastSession(newSession);
     setSession(newSession);
     syncEngine.connectCloudRelay(newSession.code);
+    const ok = await syncEngine.saveAndBroadcastSession(newSession);
+    if (!ok) {
+      setSessionError('⚠️ Session created locally but failed to save to the server. Players on other devices may not be able to join. Check your internet connection.');
+    }
   };
 
-  const handleSwitchSession = (code: string) => {
+  const handleSwitchSession = async (code: string) => {
+    setSessionError('');
     const existing = syncEngine.getSession(code);
     if (existing) {
       setSession(existing);
       syncEngine.connectCloudRelay(existing.code);
+      await syncEngine.saveAndBroadcastSession(existing);
     } else {
       const newSession = createNewSession(code);
-      syncEngine.saveAndBroadcastSession(newSession);
       setSession(newSession);
       syncEngine.connectCloudRelay(newSession.code);
+      const ok = await syncEngine.saveAndBroadcastSession(newSession);
+      if (!ok) {
+        setSessionError('⚠️ Session created locally but failed to reach the server. Check your connection.');
+      }
     }
   };
 
@@ -319,6 +349,7 @@ export function App() {
             onUpdatePlayerScore={handleUpdatePlayerScore}
             onResetSession={handleResetSession}
             onOpenProjector={() => navigateTo('PROJECTOR')}
+            sessionError={sessionError}
           />
         )}
 
