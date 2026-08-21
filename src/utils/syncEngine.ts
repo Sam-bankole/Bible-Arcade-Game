@@ -1,7 +1,7 @@
 import type { GameSession, Player, AnswerItem, GameRound, RoundState, GameType } from '../types/game';
 import { formatTimestamp, parseTimestampToMs } from './timestamp';
 import { soundFx } from './audio';
-import { db, ref, onValue, set } from './firebase';
+import { db, ref, onValue, set, get } from './firebase';
 
 const STORAGE_PREFIX = 'bible_arcade_session_';
 const CHANNEL_NAME = 'bible_arcade_global_channel';
@@ -218,7 +218,9 @@ export class SyncEngine {
     // 1. Firebase Realtime Database Cloud Sync
     try {
       const sessionRef = ref(db, `arcade_sessions/${cleanSession.code}`);
-      set(sessionRef, cleanSession);
+      set(sessionRef, cleanSession).catch(err => {
+        console.error('[SyncEngine] Firebase Realtime DB async set error:', err);
+      });
     } catch (err) {
       console.error('[SyncEngine] Firebase save error:', err);
     }
@@ -237,29 +239,48 @@ export class SyncEngine {
 
   /**
    * Look up a session from Firebase by code.
-   * Returns the session if it exists and is active, or null.
-   * Players use this — they CANNOT create sessions.
+   * Connects the cloud relay automatically and checks Realtime DB with retry.
    */
   public async lookupSession(code: string): Promise<GameSession | null> {
     const cleanCode = code.trim().toUpperCase();
     if (!cleanCode) return null;
 
-    // First try local cache
+    // Immediately connect cloud relay to listen to this room on Firebase
+    this.connectCloudRelay(cleanCode);
+
+    // 1. Check local cache
     const cached = this.getSession(cleanCode);
     if (cached && !cached.isEnded) return cached;
 
-    // Fall back to Firebase
+    // 2. Query Firebase Realtime Database
     try {
-      const { ref: fbRef, get: fbGet } = await import('./firebase').then(m => ({ ref: m.ref, get: m.get }));
-      const { db } = await import('./firebase');
-      const snap = await fbGet(fbRef(db, `arcade_sessions/${cleanCode}`));
-      if (!snap.exists()) return null;
-      const session = normalizeSession(snap.val());
-      if (session.isEnded) return null;
-      return session;
+      const sessionRef = ref(db, `arcade_sessions/${cleanCode}`);
+      const snap = await get(sessionRef);
+      if (snap.exists()) {
+        const session = normalizeSession(snap.val());
+        if (!session.isEnded) {
+          const key = `${STORAGE_PREFIX}${cleanCode}`;
+          localStorage.setItem(key, JSON.stringify(session));
+          return session;
+        }
+      }
+
+      // Retry once after 600ms in case host write is still in transit
+      await new Promise(resolve => setTimeout(resolve, 600));
+      const retrySnap = await get(sessionRef);
+      if (retrySnap.exists()) {
+        const session = normalizeSession(retrySnap.val());
+        if (!session.isEnded) {
+          const key = `${STORAGE_PREFIX}${cleanCode}`;
+          localStorage.setItem(key, JSON.stringify(session));
+          return session;
+        }
+      }
+
+      return null;
     } catch (err) {
       console.error('[SyncEngine] lookupSession error:', err);
-      return null;
+      return this.getSession(cleanCode);
     }
   }
 

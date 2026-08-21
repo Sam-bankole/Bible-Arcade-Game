@@ -45,6 +45,19 @@ export function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Auto-connect cloud relay if contestant arrives with a room code in URL params
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlCode = new URLSearchParams(window.location.search).get('code');
+      if (urlCode) {
+        const clean = urlCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (clean.length === 6) {
+          syncEngine.connectCloudRelay(clean);
+        }
+      }
+    }
+  }, []);
+
   // Connect to Firebase relay when session code changes
   useEffect(() => {
     if (session?.code) {
