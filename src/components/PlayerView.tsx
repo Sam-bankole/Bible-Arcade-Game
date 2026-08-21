@@ -11,7 +11,6 @@ import {
   Zap,
   Heart,
   Cross,
-  Trophy,
   XCircle,
   Sparkles,
   AlertCircle,
@@ -155,6 +154,11 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
   const playerAnswersForRound: AnswerItem[] = (currentRound && session.answers[currentRound.id]) || [];
   const existingSubmission = playerAnswersForRound.find(a => a.playerId === currentPlayer.id);
   const isSubmitted = !!existingSubmission;
+  const iWon = existingSubmission?.isWinner === true;
+  const iLost = existingSubmission?.status === 'WRONG' && !existingSubmission?.isWinner;
+  // Has a winner been declared for this round?
+  const roundHasWinner = playerAnswersForRound.some(a => a.isWinner);
+  const roundWinnerName = playerAnswersForRound.find(a => a.isWinner)?.playerName || '';
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -296,23 +300,57 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
 
           {/* Input or Choice Area */}
           {isSubmitted ? (
-            /* Locked In State */
-            <div className="bg-emerald-500/10 border-2 border-emerald-500/30 rounded-xl p-4 text-center space-y-2">
-              <div className="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto">
-                <CheckCircle2 className="w-5 h-5" />
+            /* Locked In State — updates to WIN/LOSS as soon as winner is declared */
+            iWon ? (
+              /* ✅ YOU WON */
+              <div className="bg-[#0f2210] border-2 border-[#ccff00]/70 rounded-xl p-5 text-center space-y-3 shadow-[0_0_32px_rgba(204,255,0,0.2)] animate-pulse-once">
+                <div className="text-5xl select-none">🏆</div>
+                <div className="space-y-1">
+                  <h4 className="font-display text-xl font-black text-[#ccff00] uppercase tracking-wider">
+                    YOU WON!
+                  </h4>
+                  <p className="font-mono text-xs text-[#ccff00]/80 bg-[#090d16] border border-[#ccff00]/20 py-1.5 px-3 rounded-lg inline-block">
+                    +{existingSubmission?.pointsAwarded || 1} point{(existingSubmission?.pointsAwarded || 1) !== 1 ? 's' : ''} awarded
+                  </p>
+                </div>
+                <p className="text-xs text-slate-400">Your answer was fastest &amp; correct!</p>
               </div>
-              <div className="space-y-0.5">
-                <h4 className="font-display text-sm font-bold text-emerald-300">
-                  ANSWER LOCKED IN
-                </h4>
-                <p className="font-mono text-xs text-white bg-[#090d16] border border-emerald-500/20 py-1.5 px-3 rounded-lg inline-block break-words max-w-full">
-                  "{existingSubmission.answerText}"
-                </p>
+            ) : iLost ? (
+              /* ❌ YOU LOST */
+              <div className="bg-[#130e0e] border-2 border-rose-500/40 rounded-xl p-5 text-center space-y-3">
+                <div className="text-5xl select-none">😞</div>
+                <div className="space-y-1">
+                  <h4 className="font-display text-xl font-black text-rose-400 uppercase tracking-wider">
+                    Not This Time
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    {roundWinnerName ? `${roundWinnerName} won this round.` : 'Another player won this round.'}
+                  </p>
+                </div>
+                <p className="text-[10px] text-slate-500">Keep going — next round coming up!</p>
               </div>
-              <p className="text-[10px] text-slate-400">
-                Timestamp recorded. Waiting for round evaluation...
-              </p>
-            </div>
+            ) : roundHasWinner && !existingSubmission ? (
+              /* Didn't submit — already has winner */
+              <div className="bg-[#130e0e] border-2 border-rose-500/40 rounded-xl p-5 text-center space-y-3">
+                <div className="text-4xl select-none">⏱️</div>
+                <h4 className="font-display text-base font-black text-rose-300">Missed This Round</h4>
+                <p className="text-xs text-slate-400">You didn't submit in time. Next round soon!</p>
+              </div>
+            ) : (
+              /* Standard locked-in waiting state */
+              <div className="bg-emerald-500/10 border-2 border-emerald-500/30 rounded-xl p-4 text-center space-y-2">
+                <div className="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div className="space-y-0.5">
+                  <h4 className="font-display text-sm font-bold text-emerald-300">ANSWER LOCKED IN</h4>
+                  <p className="font-mono text-xs text-white bg-[#090d16] border border-emerald-500/20 py-1.5 px-3 rounded-lg inline-block break-words max-w-full">
+                    "{existingSubmission.answerText}"
+                  </p>
+                </div>
+                <p className="text-[10px] text-slate-400">Waiting for host to declare winner...</p>
+              </div>
+            )
           ) : (
             /* Active Answer Submission */
             <div className="space-y-3">
@@ -408,19 +446,33 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
 
       {/* C. ROUND CLOSED / IN REVIEW */}
       {currentRound && (session.status === 'CLOSED' || session.status === 'REVIEW') && (
-        <div className="bg-[#0e131f] border border-[#1d2538] rounded-2xl p-6 text-center space-y-3 shadow-lg">
-          <div className="w-10 h-10 rounded-full bg-[#182032] border border-[#27334d] flex items-center justify-center text-slate-400 mx-auto">
-            <Lock className="w-5 h-5" />
+        iWon ? (
+          <div className="bg-[#0f2210] border-2 border-[#ccff00]/70 rounded-2xl p-7 text-center space-y-3 shadow-[0_0_32px_rgba(204,255,0,0.2)]">
+            <div className="text-6xl select-none">🏆</div>
+            <h3 className="font-display text-2xl font-black text-[#ccff00] uppercase">YOU WON!</h3>
+            <p className="text-sm text-[#ccff00]/70">+{existingSubmission?.pointsAwarded || 1} point{(existingSubmission?.pointsAwarded || 1) !== 1 ? 's' : ''} awarded</p>
+            <p className="text-xs text-slate-400">Waiting for next round...</p>
           </div>
-          <div className="space-y-1">
-            <h3 className="font-display text-base font-bold text-white">
-              Submissions Closed
-            </h3>
-            <p className="text-xs text-slate-400">
-              The host is reviewing answers and awarding points.
+        ) : iLost ? (
+          <div className="bg-[#130e0e] border-2 border-rose-500/40 rounded-2xl p-7 text-center space-y-3">
+            <div className="text-6xl select-none">😞</div>
+            <h3 className="font-display text-2xl font-black text-rose-400 uppercase">Not This Time</h3>
+            <p className="text-sm text-slate-400">
+              {roundWinnerName ? `${roundWinnerName} won this round.` : 'Another player won this round.'}
             </p>
+            <p className="text-xs text-slate-500">Waiting for next round...</p>
           </div>
-        </div>
+        ) : (
+          <div className="bg-[#0e131f] border border-[#1d2538] rounded-2xl p-6 text-center space-y-3 shadow-lg">
+            <div className="w-10 h-10 rounded-full bg-[#182032] border border-[#27334d] flex items-center justify-center text-slate-400 mx-auto">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-display text-base font-bold text-white">Submissions Closed</h3>
+              <p className="text-xs text-slate-400">The host is reviewing answers. Winner being declared...</p>
+            </div>
+          </div>
+        )
       )}
 
       {/* D. RESULTS REVEALED */}
@@ -428,72 +480,54 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
         <div className="bg-[#0f1422] border-2 border-cyan-500/40 rounded-2xl p-4 sm:p-6 space-y-4 shadow-xl">
           <div className="text-center space-y-0.5">
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded border border-cyan-500/25">
-              ROUND EVALUATED
+              ROUND COMPLETE
             </span>
-            <h3 className="font-display text-lg sm:text-xl font-bold text-white">
-              Results Revealed
-            </h3>
+            <h3 className="font-display text-lg sm:text-xl font-bold text-white">Results</h3>
           </div>
 
-          {/* Correct Answer Banner */}
-          <div className="bg-[#080b12] border border-[#1e273b] rounded-xl p-3.5 text-center space-y-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              OFFICIAL CORRECT ANSWER:
-            </span>
-            <p className="font-display text-base sm:text-lg font-bold text-[#ccff00] break-words">
-              {currentRound.correctAnswerText}
-            </p>
-          </div>
-
-          {/* Player Result Banner */}
-          {existingSubmission && (
-            <div className={`p-4 rounded-xl border-2 flex items-center gap-3 ${
-              existingSubmission.status === 'CORRECT'
-                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
-                : 'bg-rose-500/10 border-rose-500/40 text-rose-300'
-            }`}>
-              {existingSubmission.status === 'CORRECT' ? (
-                <>
-                  <div className="w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
-                    <Trophy className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="font-display font-bold text-sm text-emerald-300">
-                      CORRECT!
-                    </h4>
-                    <p className="text-xs text-emerald-400/90 font-mono">
-                      +{existingSubmission.pointsAwarded} point{existingSubmission.pointsAwarded !== 1 ? 's' : ''} awarded
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="w-9 h-9 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 shrink-0">
-                    <XCircle className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="font-display font-bold text-sm text-rose-300">
-                      INCORRECT
-                    </h4>
-                    <p className="text-xs text-slate-400 font-mono truncate">
-                      Your answer: "{existingSubmission.answerText}"
-                    </p>
-                  </div>
-                </>
-              )}
+          {/* Winner Banner */}
+          {roundWinnerName && (
+            <div className="bg-[#0f2210] border border-[#ccff00]/40 rounded-xl p-3.5 flex items-center gap-3">
+              <span className="text-2xl">🏆</span>
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">WINNER</p>
+                <p className="font-display font-black text-[#ccff00] text-sm">{roundWinnerName}</p>
+              </div>
             </div>
           )}
 
-          {/* Total Score Summary */}
-          <div className="flex items-center justify-between bg-[#0e131f] border border-[#1d2538] rounded-xl px-4 py-2.5">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              TOTAL SCORE
-            </span>
-            <span className="font-display text-xl font-black text-[#ccff00]">
-              {currentPlayer.score} PTS
-            </span>
-          </div>
+          {/* Player Result Banner */}
+          {iWon ? (
+            <div className="p-4 rounded-xl border-2 border-[#ccff00]/60 bg-[#0f2210] flex items-center gap-3">
+              <span className="text-3xl">🏆</span>
+              <div>
+                <h4 className="font-display font-black text-base text-[#ccff00]">YOU WON THIS ROUND!</h4>
+                <p className="text-xs text-[#ccff00]/70">+{existingSubmission?.pointsAwarded || 1} point{(existingSubmission?.pointsAwarded || 1) !== 1 ? 's' : ''} awarded</p>
+              </div>
+            </div>
+          ) : existingSubmission ? (
+            <div className="p-4 rounded-xl border-2 border-rose-500/40 bg-rose-500/10 flex items-center gap-3">
+              <span className="text-3xl">😞</span>
+              <div>
+                <h4 className="font-display font-black text-base text-rose-300">You Lost This Round</h4>
+                <p className="text-xs text-slate-400 font-mono">Your answer: "{existingSubmission.answerText}"</p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 rounded-xl border border-slate-700 bg-slate-800/30 flex items-center gap-3">
+              <span className="text-2xl">⏱️</span>
+              <div>
+                <h4 className="font-display font-bold text-sm text-slate-300">No Submission</h4>
+                <p className="text-xs text-slate-500">You didn't answer this round.</p>
+              </div>
+            </div>
+          )}
 
+          {/* Total Score */}
+          <div className="flex items-center justify-between bg-[#0e131f] border border-[#1d2538] rounded-xl px-4 py-2.5">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL SCORE</span>
+            <span className="font-display text-xl font-black text-[#ccff00]">{currentPlayer.score} PTS</span>
+          </div>
         </div>
       )}
 

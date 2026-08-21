@@ -620,13 +620,13 @@ export class SyncEngine {
   }
 
   /**
-   * Admin evaluates answer status (CORRECT / WRONG), awards points, and updates player scores.
+   * Admin declares a round winner. All other submissions are automatically marked as WRONG (lost).
    */
   public evaluateAnswer(
     session: GameSession,
     roundId: string,
     answerId: string,
-    status: 'CORRECT' | 'WRONG' | 'PENDING',
+    _status: 'CORRECT' | 'WRONG' | 'PENDING',
     points: number,
     isWinner: boolean = false
   ): GameSession {
@@ -634,21 +634,26 @@ export class SyncEngine {
     let prevPoints = 0;
     let targetPlayerId = '';
 
+    // When declaring a winner, mark winner as CORRECT+winner and everyone else as WRONG
     const updatedList = existing.map(ans => {
       if (ans.id === answerId) {
         prevPoints = ans.pointsAwarded;
         targetPlayerId = ans.playerId;
         return {
           ...ans,
-          status,
+          status: 'CORRECT' as const,
           pointsAwarded: points,
           isWinner
         };
       }
+      // Auto-mark all other pending answers as WRONG when a winner is picked
+      if (isWinner && ans.status === 'PENDING') {
+        return { ...ans, status: 'WRONG' as const, pointsAwarded: 0 };
+      }
       return ans;
     });
 
-    // Update player's total cumulative score
+    // Update player's cumulative score (winner only gets points)
     const updatedPlayers = { ...session.players };
     if (targetPlayerId && updatedPlayers[targetPlayerId]) {
       const delta = points - prevPoints;
@@ -658,8 +663,6 @@ export class SyncEngine {
       };
     }
 
-    if (status === 'CORRECT') soundFx.playCorrect();
-    if (status === 'WRONG') soundFx.playWrong();
     if (isWinner) soundFx.playWinner();
 
     const updated: GameSession = {
