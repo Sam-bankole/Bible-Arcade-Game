@@ -256,7 +256,7 @@ export class SyncEngine {
     try {
       const sessionRef = ref(db, `arcade_sessions/${cleanCode}`);
       const snap = await get(sessionRef);
-      if (snap.exists()) {
+      if (snap && snap.exists()) {
         const session = normalizeSession(snap.val());
         if (!session.isEnded) {
           const key = `${STORAGE_PREFIX}${cleanCode}`;
@@ -265,10 +265,14 @@ export class SyncEngine {
         }
       }
 
+      // Check cache in case onValue listener from connectCloudRelay received data
+      const cacheCheck = this.getSession(cleanCode);
+      if (cacheCheck && !cacheCheck.isEnded) return cacheCheck;
+
       // Retry once after 600ms in case host write is still in transit
       await new Promise(resolve => setTimeout(resolve, 600));
       const retrySnap = await get(sessionRef);
-      if (retrySnap.exists()) {
+      if (retrySnap && retrySnap.exists()) {
         const session = normalizeSession(retrySnap.val());
         if (!session.isEnded) {
           const key = `${STORAGE_PREFIX}${cleanCode}`;
@@ -276,6 +280,10 @@ export class SyncEngine {
           return session;
         }
       }
+
+      // Final check of local cache
+      const finalCache = this.getSession(cleanCode);
+      if (finalCache && !finalCache.isEnded) return finalCache;
 
       return null;
     } catch (err) {
