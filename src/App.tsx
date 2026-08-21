@@ -328,6 +328,7 @@ export function App() {
             currentPlayer={currentPlayer}
             onJoin={handleJoinPlayer}
             onSubmitAnswer={handleSubmitAnswer}
+            sessionError={sessionError}
           />
         )}
 

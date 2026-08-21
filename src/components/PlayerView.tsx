@@ -13,14 +13,17 @@ import {
   Cross,
   Trophy,
   XCircle,
-  Sparkles
+  Sparkles,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 interface PlayerViewProps {
   session: GameSession | null;
   currentPlayer: Player | null;
-  onJoin: (code: string) => void;
+  onJoin: (code: string) => Promise<void> | void;
   onSubmitAnswer: (answerText: string) => void;
+  sessionError?: string;
 }
 
 const GAME_ICONS: Record<string, React.ElementType> = {
@@ -35,7 +38,8 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
   session,
   currentPlayer,
   onJoin,
-  onSubmitAnswer
+  onSubmitAnswer,
+  sessionError: externalError = ''
 }) => {
   const [inputCode, setInputCode] = useState(() => {
     if (session?.code) return session.code;
@@ -46,14 +50,29 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
     return '';
   });
   const [answerText, setAnswerText] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
+  const [localError, setLocalError] = useState('');
+
+  const displayError = externalError || localError;
 
   // ── 1. JOIN SCREEN (If no session or player hasn't joined session yet) ────
   if (!session || !currentPlayer) {
-    const handleJoinSubmit = (e: React.FormEvent) => {
+    const handleJoinSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       const code = inputCode.trim().toUpperCase();
-      if (code.length < 6) return;
-      onJoin(code);
+      if (!code || code.length < 6) {
+        setLocalError('Please enter a full 6-character room code.');
+        return;
+      }
+      setLocalError('');
+      setIsJoining(true);
+      try {
+        await onJoin(code);
+      } catch (err) {
+        setLocalError('Failed to join room. Check code and try again.');
+      } finally {
+        setIsJoining(false);
+      }
     };
 
     return (
@@ -85,7 +104,10 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
                 type="text"
                 maxLength={6}
                 value={inputCode}
-                onChange={e => setInputCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                onChange={e => {
+                  setInputCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''));
+                  setLocalError('');
+                }}
                 placeholder="ENTER CODE"
                 className="w-full bg-[#07090f] border-2 border-[#263148] focus:border-[#ccff00] focus:shadow-[0_0_20px_rgba(204,255,0,0.25)] rounded-xl py-3.5 px-4 font-mono text-center text-2xl font-extrabold tracking-[0.25em] text-white uppercase placeholder:text-slate-600 placeholder:tracking-normal placeholder:text-sm outline-none transition-all duration-200"
                 autoComplete="off"
@@ -95,12 +117,29 @@ export const PlayerView: React.FC<PlayerViewProps> = ({
               />
             </div>
 
+            {displayError && (
+              <div className="flex items-center gap-2 bg-rose-500/15 border border-rose-500/40 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-rose-300 animate-fadeIn">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{displayError}</span>
+              </div>
+            )}
+
             <button
               type="submit"
-              className="group w-full py-4 px-5 bg-gradient-to-r from-[#ccff00] to-[#b3e600] hover:from-[#d4ff1a] hover:to-[#b8e600] active:scale-[0.98] text-[#060902] font-display font-black text-base tracking-wider uppercase rounded-xl shadow-[0_4px_25px_rgba(204,255,0,0.3)] hover:shadow-[0_0_32px_rgba(204,255,0,0.6)] flex items-center justify-center gap-2.5 cursor-pointer transition-all duration-200"
+              disabled={isJoining}
+              className="group w-full py-4 px-5 bg-gradient-to-r from-[#ccff00] to-[#b3e600] hover:from-[#d4ff1a] hover:to-[#b8e600] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-[#060902] font-display font-black text-base tracking-wider uppercase rounded-xl shadow-[0_4px_25px_rgba(204,255,0,0.3)] hover:shadow-[0_0_32px_rgba(204,255,0,0.6)] flex items-center justify-center gap-2.5 cursor-pointer transition-all duration-200"
             >
-              <span>ENTER GAME ROOM</span>
-              <Send className="w-4 h-4 stroke-[2.5] group-hover:translate-x-1 transition-transform duration-200" />
+              {isJoining ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin text-[#060902]" />
+                  <span>SEARCHING ROOM...</span>
+                </>
+              ) : (
+                <>
+                  <span>ENTER GAME ROOM</span>
+                  <Send className="w-4 h-4 stroke-[2.5] group-hover:translate-x-1 transition-transform duration-200" />
+                </>
+              )}
             </button>
           </form>
         </div>
